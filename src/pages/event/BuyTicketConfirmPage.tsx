@@ -1,7 +1,7 @@
 // src/pages/event/BuyTicketConfirmPage.tsx – FINAL PERFECT EDITION 2025
-import { ArrowLeft, Calendar, MapPin, Users, Zap, Ticket, Shield, Check } from 'lucide-react'
-import { useLocation, useNavigate } from 'react-router-dom'
+import { ArrowLeft, Calendar, MapPin, Shield, Ticket, Users, Zap } from 'lucide-react'
 import { useState } from 'react'
+import { useLocation, useNavigate } from 'react-router-dom'
 
 export default function BuyTicketConfirmPage() {
   const navigate = useNavigate()
