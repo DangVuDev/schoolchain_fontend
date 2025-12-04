@@ -1,7 +1,11 @@
-// src/pages/Register.tsx
+// src/pages/Register.tsx – SẠCH NHẤT VIỆT NAM 2025
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, CheckCircle2 } from 'lucide-react'
+
+// CHỈ KHAI BÁO 1 LẦN – DÙNG LẠI Ở CẢ LOGIN VÀ REGISTER
+const inputClass = "w-full px-5 py-4 rounded-2xl bg-white/10 border border-white/20 placeholder:text-white/40 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/20 transition"
+const eyeBtnClass = "absolute right-4 top-1/2 -translate-y-1/2 text-white/50 hover:text-white transition"
 
 export default function Register() {
   const navigate = useNavigate()
@@ -10,191 +14,113 @@ export default function Register() {
   const [password, setPassword] = useState('')
   const [termsAccepted, setTermsAccepted] = useState(false)
 
-  const getStrength = () => {
-    if (password.length >= 12) return 4
-    if (password.length >= 9) return 3
-    if (password.length >= 6) return 2
-    if (password.length > 0) return 1
-    return 0
-  }
-
-  const strength = getStrength()
-  const strengthColors = ['#ef4444', '#f59e0b', '#f59e0b', '#10b981']
+  const strength = password.length >= 12 ? 4 : password.length >= 9 ? 3 : password.length >= 6 ? 2 : password.length > 0 ? 1 : 0
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault()
-    if (!termsAccepted) return
-    navigate('/passphrase')
+    if (!termsAccepted || strength < 3) return
+    navigate('/success')
   }
 
   return (
-    <div className="min-h-screen flex flex-col items-center justify-center p-6 bg-gradient-to-b from-black via-black to-gray-900 relative overflow-hidden text-white">
-      
-      {/* Background neon blur effects */}
-      <div className="fixed inset-0 -z-10 pointer-events-none">
-        <div className="absolute inset-0 bg-gradient-to-b from-purple-900/20 via-transparent to-orange-900/20" />
-        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[450px] h-[450px] bg-purple-600/40 blur-3xl rounded-full animate-pulse" />
-        <div className="absolute bottom-0 right-0 w-[320px] h-[320px] bg-orange-600/40 blur-3xl rounded-full animate-pulse delay-700" />
+    <div className="min-h-screen flex flex-col justify-center px-5 py-12 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-orange-900/30" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-96 h-96 bg-purple-600/30 blur-3xl rounded-full animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-80 h-80 bg-orange-600/30 blur-3xl rounded-full animate-pulse delay-700" />
       </div>
 
-      {/* Card */}
-      <div className="w-full max-w-2xl bg-white/10 backdrop-blur-3xl border border-white/20 rounded-3xl p-12 shadow-2xl">
-
-        {/* Logo */}
-        <div className="text-center mb-12">
-          <div className="inline-flex items-center justify-center w-24 h-24 rounded-full bg-gradient-to-br from-purple-500 to-orange-500 shadow-[0_0_25px_rgba(255,165,0,0.5)] mb-6">
-            <span className="text-5xl font-black">₫</span>
-          </div>
-          <h1 className="text-5xl font-black mb-4 bg-gradient-to-r from-violet-300 to-orange-300 bg-clip-text text-transparent">
-            Create Account
-          </h1>
-          <p className="inline-block px-6 py-2 rounded-full text-sm font-bold bg-white/10 border border-white/20 text-purple-300 shadow-xl backdrop-blur-xl">
-            ⚡ 0 GAS FEE • FREE FOREVER
-          </p>
-        </div>
-
-        {/* Form */}
-        <form onSubmit={handleSubmit} className="space-y-8">
-
-          {/* Student ID */}
-          <div>
-            <label className="block mb-3 text-lg font-semibold text-white/80">Student ID</label>
-            <input
-              type="text"
-              placeholder="22DH110001"
-              className="w-full px-6 py-5 text-xl rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 
-                         placeholder:text-white/40 focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all"
-              required
-            />
+      <div className="w-full max-w-md mx-auto">
+        <div className="bg-white/10 backdrop-blur-3xl rounded-3xl border border-white/10 shadow-2xl p-8">
+          <div className="text-center mb-8">
+            <div className="w-20 h-20 mx-auto mb-5 rounded-2xl bg-gradient-to-br from-purple-500 to-orange-500 flex items-center justify-center shadow-xl">
+              <span className="text-4xl font-black">₫</span>
+            </div>
+            <h1 className="text-3xl font-black bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
+              Tạo tài khoản mới
+            </h1>
           </div>
 
-          {/* Full Name */}
-          <div>
-            <label className="block mb-3 text-lg font-semibold text-white/80">Full Name</label>
-            <input
-              type="text"
-              placeholder="Nguyễn Văn A"
-              className="w-full px-6 py-5 text-xl rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 
-                         placeholder:text-white/40 focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all"
-              required
-            />
-          </div>
+          <form onSubmit={handleSubmit} className="space-y-5">
+            <input type="text" placeholder="Mã số sinh viên" className={inputClass} required />
+            <input type="text" placeholder="Họ và tên" className={inputClass} required />
+            
+            <div>
+              <input type="email" placeholder="Email sinh viên (@edu.vn)" className={inputClass} required />
+              <p className="text-xs text-emerald-400 mt-1.5 flex items-center gap-1">
+                <CheckCircle2 size={14} /> Bắt buộc đuôi .edu.vn
+              </p>
+            </div>
 
-          {/* University Email */}
-          <div>
-            <label className="block mb-3 text-lg font-semibold text-white/80">University Email</label>
-            <input
-              type="email"
-              placeholder="abc@hcmut.edu.vn"
-              className="w-full px-6 py-5 text-xl rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 
-                         placeholder:text-white/40 focus:border-purple-400 focus:ring-4 focus:ring-purple-400/20 transition-all"
-              required
-            />
-            <p className="text-sm text-purple-400 mt-2 flex items-center gap-2">
-              <CheckCircle2 size={18} /> Must end with .edu.vn
-            </p>
-          </div>
-
-          {/* Password */}
-          <div>
-            <label className="block mb-3 text-lg font-semibold text-white/80">Password</label>
             <div className="relative">
               <input
                 type={showPassword ? 'text' : 'password'}
+                placeholder="Mật khẩu mạnh (tối thiểu 9 ký tự)"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
-                placeholder="Enter strong password"
-                className="w-full px-6 py-5 text-xl rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 
-                           placeholder:text-white/40 pr-14 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/20 transition-all"
+                className={inputClass + " pr-12"}
                 required
               />
-              <button
-                type="button"
-                onClick={() => setShowPassword(!showPassword)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-purple-300 hover:text-purple-200 transition"
-              >
-                {showPassword ? <EyeOff size={26} /> : <Eye size={26} />}
+              <button type="button" onClick={() => setShowPassword(!showPassword)} className={eyeBtnClass}>
+                {showPassword ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
-            </div>
-
-            {/* Strength bar */}
-            {password.length > 0 && (
-              <div className="mt-4">
-                <div className="flex gap-2 mb-2">
-                  {[1, 2, 3, 4].map(i => (
-                    <div
-                      key={i}
-                      className="h-3 flex-1 rounded-full transition-all duration-300"
-                      style={{ background: i <= strength ? strengthColors[strength - 1] : '#334155' }}
-                    />
-                  ))}
+              {password && (
+                <div className="mt-3">
+                  <div className="flex gap-1.5">
+                    {[...Array(4)].map((_, i) => (
+                      <div
+                        key={i}
+                        className={`h-2 flex-1 rounded-full transition-all ${i < strength ? 'bg-gradient-to-r from-purple-500 to-orange-500' : 'bg-white/10'}`}
+                      />
+                    ))}
+                  </div>
+                  <p className={`text-xs font-bold mt-1.5 ${strength === 4 ? 'text-emerald-400' : strength === 3 ? 'text-yellow-400' : strength === 2 ? 'text-orange-400' : 'text-red-400'}`}>
+                    {strength === 4 ? 'Rất mạnh' : strength === 3 ? 'Mạnh' : strength === 2 ? 'Trung bình' : 'Yếu'}
+                  </p>
                 </div>
-                <p className="text-sm font-medium" style={{ color: strengthColors[strength - 1] || '#94a3b8' }}>
-                  {strength === 4 && 'Very Strong'}
-                  {strength === 3 && 'Strong'}
-                  {strength === 2 && 'Medium'}
-                  {strength === 1 && 'Weak'}
-                </p>
-              </div>
-            )}
-          </div>
+              )}
+            </div>
 
-          {/* Confirm Password */}
-          <div>
-            <label className="block mb-3 text-lg font-semibold text-white/80">Confirm Password</label>
             <div className="relative">
-              <input
-                type={showConfirm ? 'text' : 'password'}
-                placeholder="Re-enter password"
-                className="w-full px-6 py-5 text-xl rounded-2xl bg-white/10 backdrop-blur-2xl border border-white/20 
-                           placeholder:text-white/40 pr-14 focus:border-orange-400 focus:ring-4 focus:ring-orange-400/20 transition-all"
-                required
-              />
-              <button
-                type="button"
-                onClick={() => setShowConfirm(!showConfirm)}
-                className="absolute right-5 top-1/2 -translate-y-1/2 text-purple-300 hover:text-purple-200 transition"
-              >
-                {showConfirm ? <EyeOff size={26} /> : <Eye size={26} />}
+              <input type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu" className={inputClass + " pr-12"} required />
+              <button type="button" onClick={() => setShowConfirm(!showConfirm)} className={eyeBtnClass}>
+                {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>
             </div>
-          </div>
 
-          {/* Terms */}
-          <label className="flex items-start gap-4 cursor-pointer select-none">
-            <input
-              type="checkbox"
-              checked={termsAccepted}
-              onChange={(e) => setTermsAccepted(e.target.checked)}
-              className="w-7 h-7 mt-1 rounded border-2 border-purple-400/40 accent-purple-500"
-            />
-            <span className="text-white/80 text-base leading-relaxed">
-              I agree to the <span className="text-purple-300 font-bold">Terms of Service</span> and{' '}
-              <span className="text-purple-300 font-bold">Privacy Policy</span>
-            </span>
-          </label>
+            <label className="flex items-start gap-3 cursor-pointer text-sm">
+              <input
+                type="checkbox"
+                checked={termsAccepted}
+                onChange={(e) => setTermsAccepted(e.target.checked)}
+                className="mt-0.5 w-5 h-5 accent-purple-500 rounded"
+              />
+              <span className="text-white/70 leading-tight">
+                Tôi đồng ý với <span className="text-purple-400 font-bold">Điều khoản dịch vụ</span> và{' '}
+                <span className="text-purple-400 font-bold">Chính sách bảo mật</span>
+              </span>
+            </label>
 
-          {/* Submit */}
-          <button
-            type="submit"
-            disabled={!termsAccepted || strength < 3}
-            className={`w-full py-6 text-2xl font-black rounded-3xl bg-gradient-to-r from-purple-600 to-orange-600 text-white shadow-2xl tracking-wide transition-all ${
-              !termsAccepted || strength < 3
-                ? 'opacity-50 cursor-not-allowed'
-                : 'hover:scale-[1.02] hover:shadow-[0_0_30px_rgba(255,165,0,0.5)]'
-            }`}
-          >
-            Create Account →
-          </button>
-        </form>
+            <button
+              type="submit"
+              disabled={!termsAccepted || strength < 3}
+              className={`w-full py-5 rounded-2xl font-black text-xl transition-all ${
+                termsAccepted && strength >= 3
+                  ? 'bg-gradient-to-r from-purple-600 to-orange-600 shadow-lg shadow-purple-600/50 hover:scale-105'
+                  : 'bg-white/10 text-white/40 cursor-not-allowed'
+              }`}
+            >
+              Tiếp tục
+            </button>
+          </form>
 
-        <p className="text-center mt-8 text-white/60 text-lg">
-          Already have an account?{' '}
-          <a href="/login" className="text-purple-300 font-bold hover:text-purple-200 transition">
-            Sign In
-          </a>
-        </p>
-
+          <p className="text-center mt-8 text-white/60 text-sm">
+            Đã có tài khoản?{' '}
+            <a href="/login" className="font-bold text-purple-400 hover:text-purple-300">
+              Đăng nhập
+            </a>
+          </p>
+        </div>
       </div>
     </div>
   )

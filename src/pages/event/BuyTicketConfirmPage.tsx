@@ -1,116 +1,176 @@
-import { ArrowLeft, Calendar, MapPin, Ticket as TicketIcon, Users, Zap } from 'lucide-react';
-import { useLocation, useNavigate } from 'react-router-dom';
+// src/pages/event/BuyTicketConfirmPage.tsx – FINAL PERFECT EDITION 2025
+import { ArrowLeft, Calendar, MapPin, Users, Zap, Ticket, Shield, Check } from 'lucide-react'
+import { useLocation, useNavigate } from 'react-router-dom'
+import { useState } from 'react'
 
 export default function BuyTicketConfirmPage() {
-  const navigate = useNavigate();
-  const location = useLocation();
-  const { event, tier } = location.state || {};
+  const navigate = useNavigate()
+  const location = useLocation()
+  const { event, tier } = location.state || {}
 
-  const quantity = 2;
-  const total = tier?.price * quantity;
+  const quantity = 2
+  const total = tier?.price ? tier.price * quantity : 300000
 
+  const [passphraseWord, setPassphraseWord] = useState('')
+  const [termsAccepted, setTermsAccepted] = useState(false)
 
+  const isReadyToPay = passphraseWord.length > 0 && termsAccepted
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
-      <div className="container mx-auto px-6 pt-10">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white pb-32">
+      {/* Background Glow – đồng bộ toàn app */}
+      <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
+        <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-orange-900/30" />
+        <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-purple-600/20 blur-3xl rounded-full animate-pulse" />
+        <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-orange-600/20 blur-3xl rounded-full animate-pulse delay-1000" />
+      </div>
+
+      <div className="px-5 pt-6">
+        {/* Back Button */}
         <button
           onClick={() => navigate(-1)}
-          className="flex items-center gap-3 text-gray-400 hover:text-white transition mb-10"
+          className="flex items-center gap-3 text-white/60 hover:text-white transition mb-8"
         >
-          <ArrowLeft className="w-6 h-6" />
-          Back to Event
+          <ArrowLeft size={24} />
+          <span className="text-lg font-medium">Quay lại chọn vé</span>
         </button>
 
-        <div className="text-center mb-12">
-          <h2 className="text-5xl md:text-7xl font-black mb-4">Confirm Your Purchase</h2>
-          <p className="text-xl text-gray-400">Review your order before completing</p>
-          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-emerald-400 px-8 py-4 rounded-full mt-6 text-xl font-bold">
-            <Zap className="w-7 h-7" />
-            0 GAS FEE • FREE MINTING
+        {/* Header */}
+        <div className="text-center mb-10">
+          <h1 className="text-4xl sm:text-5xl font-black bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
+            Xác nhận thanh toán
+          </h1>
+          <p className="text-white/60 mt-3 text-lg">Kiểm tra kỹ trước khi hoàn tất</p>
+
+          <div className="inline-flex items-center gap-3 bg-gradient-to-r from-emerald-500 to-teal-500 px-6 py-3 rounded-full mt-6 text-lg font-black shadow-lg shadow-emerald-600/40">
+            <Zap size={24} />
+            0 GAS FEE • MIỄN PHÍ MINT NFT
           </div>
         </div>
 
-        <div className="max-w-4xl mx-auto">
-          <div className="glass-card rounded-3xl p-12 md:p-16">
+        {/* Main Card */}
+        <div className="max-w-2xl mx-auto">
+          <div className="bg-white/5 backdrop-blur-3xl rounded-3xl border border-white/10 shadow-2xl overflow-hidden">
             {/* Event Preview */}
-            <div className="flex flex-col md:flex-row gap-10 pb-12 border-b border-white/10 mb-12">
-              <div className="w-56 h-56 bg-gradient-to-br from-purple-600 to-orange-600 rounded-3xl flex items-center justify-center text-9xl shadow-2xl shadow-purple-600/50 flex-shrink-0">
-                Music
-              </div>
-              <div>
-                <h3 className="text-4xl font-black mb-6">{event?.title}</h3>
-                <div className="space-y-4 text-lg text-gray-300">
-                  <p className="flex items-center gap-4"><Calendar className="w-6 h-6" /> February 20, 2025 • 7:00 PM - 11:00 PM</p>
-                  <p className="flex items-center gap-4"><MapPin className="w-6 h-6" /> HCMUT Main Stadium</p>
-                  <p className="flex items-center gap-4"><Users className="w-6 h-6" /> Featuring: Sơn Tùng M-TP, HIEUTHUHAI & More</p>
+            <div className="p-8 border-b border-white/5">
+              <div className="flex flex-col sm:flex-row gap-6 items-center sm:items-start">
+                <div className="w-32 h-32 rounded-3xl bg-gradient-to-br from-purple-600 via-pink-600 to-orange-600 flex items-center justify-center text-6xl font-black shadow-2xl flex-shrink-0">
+                  Music
                 </div>
-                <div className="mt-6 inline-block bg-purple-900/30 border-2 border-purple-500 rounded-xl px-6 py-3">
-                  <span className="text-purple-400 font-bold">VIP Section • Seats: A1, A2</span>
-                </div>
-              </div>
-            </div>
-
-            {/* Price Breakdown */}
-            <div className="glass-card rounded-3xl p-10 mb-10">
-              <h4 className="text-2xl font-bold mb-8 flex items-center gap-4">
-                Purchase Summary
-              </h4>
-              <div className="space-y-6 text-lg">
-                <div className="flex justify-between"><span className="text-gray-400">VIP Seat A1</span> <span>150,000 VNDC</span></div>
-                <div className="flex justify-between"><span className="text-gray-400">VIP Seat A2</span> <span>150,000 VNDC</span></div>
-                <div className="border-t border-white/10 pt-6">
-                  <div className="flex justify-between text-xl"><span>Subtotal (2 tickets)</span> <span className="font-bold">300,000 VNDC</span></div>
-                  <div className="flex justify-between text-xl"><span>Service Fee</span> <span className="text-emerald-400 font-black">0 VNDC (Waived)</span></div>
-                  <div className="flex justify-between text-xl"><span>Network Gas Fee</span> <span className="text-emerald-400 font-black">0 VNDC (Free)</span></div>
-                </div>
-                <div className="border-t-2 border-white/20 pt-8 flex justify-between items-center">
-                  <span className="text-3xl font-bold">Total Payment</span>
-                  <div className="text-right">
-                    <div className="text-4xl font-black text-purple-400">{total.toLocaleString()} VNDC</div>
-                    <div className="text-gray-500">≈ $12.00 USD</div>
+                <div className="text-center sm:text-left">
+                  <h3 className="text-2xl sm:text-3xl font-black mb-3">{event?.title || 'Spring Music Festival 2025'}</h3>
+                  <div className="space-y-2 text-white/70">
+                    <p className="flex items-center justify-center sm:justify-start gap-3">
+                      <Calendar size={20} /> 20/02/2025 • 19:00 - 23:00
+                    </p>
+                    <p className="flex items-center justify-center sm:justify-start gap-3">
+                      <MapPin size={20} /> Sân vận động chính ĐH Bách Khoa
+                    </p>
+                    <p className="flex items-center justify-center sm:justify-start gap-3">
+                      <Users size={20} /> Sơn Tùng M-TP, HIEUTHUHAI, Orange, tlinh
+                    </p>
+                  </div>
+                  <div className="mt-4 inline-block bg-purple-900/40 border border-purple-500/60 rounded-2xl px-5 py-2">
+                    <span className="text-purple-300 font-bold">VIP • Ghế A1, A2</span>
                   </div>
                 </div>
               </div>
             </div>
 
-            {/* NFT Info */}
-            <div className="bg-blue-900/20 border-2 border-blue-500 rounded-2xl p-8 mb-10">
-              <div className="flex gap-6">
-                <TicketIcon className="w-12 h-12 text-blue-400" />
-                <div>
-                  <h5 className="text-xl font-bold text-blue-400 mb-3">NFT Tickets Will Be Minted to Your Wallet</h5>
-                  <p className="text-gray-300 leading-relaxed">
-                    Your tickets will be minted as NFTs on Polygon zkEVM and sent to your wallet immediately after purchase confirmation.
-                  </p>
+            {/* Price Breakdown */}
+            <div className="p-8 bg-white/5">
+              <h4 className="text-2xl font-black mb-6">Chi tiết thanh toán</h4>
+              <div className="space-y-4">
+                <div className="flex justify-between text-lg">
+                  <span className="text-white/60">2 × Vé VIP (A1, A2)</span>
+                  <span className="font-bold">300,000 VNDC</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span className="text-white/60">Phí dịch vụ</span>
+                  <span className="text-emerald-400 font-black">0 VNDC</span>
+                </div>
+                <div className="flex justify-between text-lg">
+                  <span className="text-white/60">Phí mạng (Gas)</span>
+                  <span className="text-emerald-400 font-black">0 VNDC</span>
+                </div>
+                <div className="pt-6 border-t-2 border-white/10">
+                  <div className="flex justify-between items-center">
+                    <span className="text-2xl font-bold">Tổng cộng</span>
+                    <div className="text-right">
+                      <div className="text-4xl font-black bg-gradient-to-r from-purple-400 to-orange-400 bg-clip-text text-transparent">
+                        {total.toLocaleString()} VNDC
+                      </div>
+                      <div className="text-white/50 text-sm">≈ $12.00 USD</div>
+                    </div>
+                  </div>
                 </div>
               </div>
             </div>
 
-            {/* Security & Terms */}
-            <div className="space-y-8 mb-12">
+            {/* NFT Mint Info */}
+            <div className="mx-8 my-8 p-6 bg-gradient-to-r from-blue-900/20 to-purple-900/20 border border-blue-500/40 rounded-2xl flex items-start gap-4">
+              <Ticket size={40} className="text-blue-400 flex-shrink-0" />
               <div>
-                <label className="text-xl font-bold text-gray-200 mb-4 block">Security Verification Required</label>
-                <input type="password" placeholder="Enter the first word of your recovery passphrase..." className="w-full px-6 py-5 bg-white/10 rounded-xl border border-white/20 focus:border-purple-500 outline-none text-lg" />
+                <p className="text-xl font-black text-blue-300">Vé sẽ được mint thành NFT</p>
+                <p className="text-white/70 mt-1">Vé NFT sẽ được gửi ngay vào ví của bạn trên Polygon zkEVM sau khi thanh toán thành công.</p>
               </div>
-              <label className="flex items-start gap-4 cursor-pointer">
-                <input type="checkbox" className="w-6 h-6 mt-1" />
-                <span className="text-gray-300 leading-relaxed">
-                  I have read and agree to the <a href="#" className="text-purple-400 font-bold">Terms and Conditions</a> and <a href="#" className="text-purple-400 font-bold">Refund Policy</a>.
+            </div>
+
+            {/* Security Verification */}
+            <div className="px-8 pb-6">
+              <div className="flex items-center gap-3 mb-4">
+                <Shield size={28} className="text-emerald-400" />
+                <h4 className="text-xl font-black">Xác minh bảo mật</h4>
+              </div>
+              <input
+                type="text"
+                placeholder="Nhập từ thứ 3 trong cụm từ khôi phục..."
+                value={passphraseWord}
+                onChange={(e) => setPassphraseWord(e.target.value)}
+                className="w-full px-6 py-5 rounded-2xl bg-white/10 border border-white/20 placeholder:text-white/40 focus:border-emerald-400 focus:outline-none focus:ring-4 focus:ring-emerald-400/20 transition text-lg"
+              />
+            </div>
+
+            {/* Terms */}
+            <div className="px-8 pb-8">
+              <label className="flex items-start gap-4 cursor-pointer select-none">
+                <input
+                  type="checkbox"
+                  checked={termsAccepted}
+                  onChange={(e) => setTermsAccepted(e.target.checked)}
+                  className="w-6 h-6 mt-0.5 accent-purple-500 rounded"
+                />
+                <span className="text-white/70 leading-relaxed">
+                  Tôi đã đọc và đồng ý với{' '}
+                  <span className="text-purple-400 font-bold">Điều khoản dịch vụ</span> và{' '}
+                  <span className="text-purple-400 font-bold">Chính sách hoàn tiền</span>
                 </span>
               </label>
             </div>
 
-            <button className="w-full bg-gradient-to-r from-purple-600 to-orange-600 py-8 rounded-2xl text-2xl font-black hover:scale-105 transition transform">
-              Confirm & Purchase Tickets →
-            </button>
+            {/* Confirm Button */}
+            <div className="px-8 pb-10">
+              <button
+                disabled={!isReadyToPay}
+                className={`w-full py-6 rounded-2xl font-black text-2xl transition-all shadow-2xl ${
+                  isReadyToPay
+                    ? 'bg-gradient-to-r from-purple-600 to-orange-600 hover:scale-105 active:scale-95 shadow-purple-600/60'
+                    : 'bg-white/10 text-white/40 cursor-not-allowed'
+                }`}
+              >
+                {isReadyToPay ? 'Xác nhận & Thanh toán ngay' : 'Vui lòng hoàn tất xác minh'}
+              </button>
 
-            <div className="text-center mt-6">
-              <a href="#" className="text-red-500 font-bold text-lg">Cancel Purchase</a>
+              <button
+                onClick={() => navigate(-1)}
+                className="w-full mt-5 text-red-400 font-bold text-lg hover:text-red-300 transition"
+              >
+                Hủy thanh toán
+              </button>
             </div>
           </div>
         </div>
       </div>
     </div>
-  );
+  )
 }

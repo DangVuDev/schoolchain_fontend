@@ -1,4 +1,4 @@
-// src/pages/Profile.tsx – BẢN ĐỈNH CAO NHẤT VIỆT NAM 2025
+// src/pages/Profile.tsx – MOBILE PERFECT EDITION 2025
 import {
   Bell,
   ChevronRight,
@@ -9,21 +9,17 @@ import {
   Shield,
   Sparkles,
   Ticket,
-  User, Wallet
+  User,
+  Wallet,
 } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
 import { useAuth } from '../context/AuthContext'
 
 export default function Profile() {
-  const { userName = 'Nguyễn Văn A', studentId = '22DH110001'} = useAuth()
-
+  const { userName = 'Nguyễn Văn A', studentId = '22DH110001' } = useAuth()
   const navigate = useNavigate()
 
-  
-
-  const handleLogout = () => {
-    navigate('/login')
-  }
+  const handleLogout = () => navigate('/login')
 
   const menuItems = [
     { icon: Shield, label: 'Bảo mật & Riêng tư', desc: 'PIN, Face ID, 2FA', to: '/security' },
@@ -34,125 +30,97 @@ export default function Profile() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
-      {/* Dynamic Background */}
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white pb-32">
+      {/* Background Glow */}
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-orange-900/30" />
         <div className="absolute top-0 left-1/2 -translate-x-1/2 w-[1000px] h-[1000px] bg-purple-600/20 blur-3xl rounded-full animate-pulse" />
         <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-orange-600/20 blur-3xl rounded-full animate-pulse delay-1000" />
       </div>
 
-      <div className="container mx-auto px-6 pt-16 pb-32 max-w-7xl">
-        {/* Header + Avatar - Responsive */}
-        <div className="text-center mb-16">
-          <div className="relative inline-block group">
-            {/* Glow effect */}
-            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-orange-600 blur-3xl rounded-full opacity-70 group-hover:opacity-100 transition-all duration-1000" />
-            
+      <div className="px-5 pt-8 pb-10">
+        {/* Avatar + Info – gọn đẹp trên mobile */}
+        <div className="text-center mb-10">
+          <div className="relative inline-block">
+            {/* Glow */}
+            <div className="absolute inset-0 bg-gradient-to-br from-purple-600 to-orange-600 blur-3xl rounded-full opacity-60" />
+
             {/* Avatar */}
-            <div className="relative w-48 h-48 md:w-64 md:h-64 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 p-2 shadow-2xl">
-              <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-9xl md:text-10xl font-black border-4 border-white/20">
+            <div className="relative w-28 h-28 sm:w-32 sm:h-32 rounded-full bg-gradient-to-br from-purple-500 via-pink-500 to-orange-500 p-1.5 shadow-2xl">
+              <div className="w-full h-full rounded-full bg-black flex items-center justify-center text-6xl sm:text-7xl font-black">
                 {userName[0].toUpperCase()}
               </div>
             </div>
 
             {/* Student Badge */}
-            <div className="absolute -bottom-4 -right-4 w-20 h-20 md:w-24 md:h-24 bg-emerald-500 rounded-full flex items-center justify-center border-8 border-slate-950 shadow-2xl animate-pulse">
-              <School2 size={48} className="text-white" />
+            <div className="absolute -bottom-2 -right-2 w-14 h-14 bg-emerald-500 rounded-full flex items-center justify-center border-4 border-slate-950 shadow-xl">
+              <School2 size={28} className="text-white" />
             </div>
           </div>
 
-          <h1 className="text-6xl md:text-7xl lg:text-8xl font-black mt-10 bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
+          <h1 className="text-3xl sm:text-4xl font-black mt-6 bg-gradient-to-r from-purple-400 via-pink-400 to-orange-400 bg-clip-text text-transparent">
             {userName}
           </h1>
-          <p className="text-2xl md:text-3xl text-white/60 mt-4 font-medium">MSSV: {studentId}</p>
-          
-          <div className="flex justify-center mt-6">
-            <div className="inline-flex items-center gap-4 px-10 py-5 bg-emerald-500/20 rounded-full border-2 border-emerald-500/50">
-              <Sparkles className="w-8 h-8 text-emerald-400" />
-              <span className="text-2xl font-black text-emerald-400">ĐÃ XÁC MINH SINH VIÊN</span>
-              <Sparkles className="w-8 h-8 text-emerald-400" />
+          <p className="text-lg text-white/60 mt-2">MSSV: {studentId}</p>
+
+          <div className="flex justify-center mt-5">
+            <div className="flex items-center gap-2 px-5 py-2.5 bg-emerald-500/20 rounded-full border border-emerald-500/40">
+              <Sparkles size={18} className="text-emerald-400" />
+              <span className="text-sm font-bold text-emerald-400">ĐÃ XÁC MINH</span>
+              <Sparkles size={18} className="text-emerald-400" />
             </div>
           </div>
         </div>
 
-        
-
-        {/* Quick Actions - Grid responsive */}
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-10 max-w-5xl mx-auto mb-20">
-          <NavLink to="/my-tickets" className="group">
-            <div className="bg-white/5 backdrop-blur-3xl rounded-3xl p-12 text-center border border-white/10 hover:border-purple-500/60 transition-all hover:shadow-2xl hover:shadow-purple-600/40">
-              <div className="w-32 h-32 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-purple-600 to-pink-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
-                <Ticket size={80} className="text-white" />
-              </div>
-              <p className="text-3xl font-black mb-2">Vé NFT</p>
-              <p className="text-white/60 text-xl">3 vé đang sở hữu</p>
-            </div>
-          </NavLink>
-
-          <NavLink to="/receive" className="group">
-            <div className="bg-white/5 backdrop-blur-3xl rounded-3xl p-12 text-center border border-white/10 hover:border-emerald-500/60 transition-all hover:shadow-2xl hover:shadow-emerald-600/40">
-              <div className="w-32 h-32 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-emerald-500 to-teal-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
-                <QrCode size={80} className="text-white" />
-              </div>
-              <p className="text-3xl font-black mb-2">Nhận tiền</p>
-              <p className="text-white/60 text-xl">Mã QR cá nhân</p>
-            </div>
-          </NavLink>
-
-          <NavLink to="/wallet-detail" className="group">
-            <div className="bg-white/5 backdrop-blur-3xl rounded-3xl p-12 text-center border border-white/10 hover:border-orange-500/60 transition-all hover:shadow-2xl hover:shadow-orange-600/40">
-              <div className="w-32 h-32 mx-auto mb-8 rounded-3xl bg-gradient-to-br from-orange-500 to-red-600 flex items-center justify-center shadow-2xl group-hover:scale-110 transition-all">
-                <Wallet size={80} className="text-white" />
-              </div>
-              <p className="text-3xl font-black mb-2">Quản lý ví</p>
-              <p className="text-white/60 text-xl">Backup, private key</p>
-            </div>
-          </NavLink>
-        </div>
-
-        {/* Menu Settings */}
-        <div className="max-w-4xl mx-auto space-y-6">
-          <h2 className="text-4xl md:text-5xl font-black text-center mb-10">Cài đặt & Bảo mật</h2>
-          {menuItems.map((item) => (
-            <NavLink key={item.label} to={item.to} className="block group">
-              <div className="flex items-center justify-between p-8 md:p-10 bg-white/5 backdrop-blur-3xl rounded-3xl border border-white/10 hover:border-purple-500/60 transition-all hover:shadow-2xl hover:shadow-purple-600/30">
-                <div className="flex items-center gap-8">
-                  <div className="w-20 h-20 rounded-3xl bg-white/10 flex items-center justify-center group-hover:scale-110 transition-all shadow-xl">
-                    <item.icon size={48} className="text-purple-400" />
-                  </div>
-                  <div>
-                    <p className="text-3xl font-black">{item.label}</p>
-                    <p className="text-white/60 text-xl">{item.desc}</p>
-                  </div>
+        {/* Quick Actions – 1 cột trên mobile, 3 cột trên tablet+ */}
+        <div className="grid grid-cols-1 sm:grid-cols-3 gap- gap-5 mb-12">
+          {[
+            { to: '/my-tickets', icon: Ticket, color: 'from-purple-600 to-pink-600', title: 'Vé NFT', desc: '3 vé đang sở hữu' },
+            { to: '/receive', icon: QrCode, color: 'from-emerald-500 to-teal-600', title: 'Nhận tiền', desc: 'Mã QR cá nhân' },
+            { to: '/wallet-detail', icon: Wallet, color: 'from-orange-500 to-red-600', title: 'Quản lý ví', desc: 'Backup, private key' },
+          ].map((item) => (
+            <NavLink key={item.to} to={item.to} className="group">
+              <div className="bg-white/5 backdrop-blur-3xl rounded-2xl p-6 text-center border border-white/10 hover:border-white/20 transition-all">
+                <div className={`w-20 h-20 mx-auto mb-4 rounded-2xl bg-gradient-to-br ${item.color} flex items-center justify-center shadow-xl group-hover:scale-110 transition-transform`}>
+                  <item.icon size={40} className="text-white" />
                 </div>
-                <ChevronRight size={48} className="text-white/30 group-hover:text-purple-400 group-hover:translate-x-4 transition-all" />
+                <p className="text-xl font-bold">{item.title}</p>
+                <p className="text-white/50 text-sm mt-1">{item.desc}</p>
               </div>
             </NavLink>
           ))}
         </div>
 
-        {/* Logout Button */}
-        <div className="max-w-4xl mx-auto mt-20">
+        {/* Menu Settings – gọn gàng, dễ bấm */}
+        <div className="space-y-4 max-w-xl mx-auto">
+          <h2 className="text-2xl font-black text-center mb-6">Cài đặt & Bảo mật</h2>
+          {menuItems.map((item) => (
+            <NavLink key={item.label} to={item.to} className="block group">
+              <div className="flex items-center justify-between p-5 bg-white/5 backdrop-blur-3xl rounded-2xl border border-white/10 hover:border-purple-500/40 transition-all">
+                <div className="flex items-center gap-4">
+                  <div className="w-14 h-14 rounded-2xl bg-white/10 flex items-center justify-center">
+                    <item.icon size={28} className="text-purple-400" />
+                  </div>
+                  <div>
+                    <p className="text-lg font-bold">{item.label}</p>
+                    <p className="text-white/50 text-sm">{item.desc}</p>
+                  </div>
+                </div>
+                <ChevronRight size={24} className="text-white/30 group-hover:text-purple-400 group-hover:translate-x-2 transition-all" />
+              </div>
+            </NavLink>
+          ))}
+        </div>
+
+        {/* Logout Button – vừa tay, dễ bấm */}
+        <div className="max-w-xl mx-auto mt-12">
           <button
             onClick={handleLogout}
-            className="w-full py-10 rounded-3xl bg-gradient-to-r from-rose-600 to-red-600 font-black text-4xl flex items-center justify-center gap-6 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-red-600/50"
+            className="w-full py-5 rounded-2xl bg-gradient-to-r from-rose-600 to-red-600 font-bold text-xl flex items-center justify-center gap-4 hover:scale-105 active:scale-95 transition-all shadow-2xl shadow-red-600/50"
           >
-            <LogOut size={56} />
+            <LogOut size={28} />
             Đăng xuất
           </button>
-        </div>
-      </div>
-
-      {/* Mobile Bottom Navigation - Chỉ hiện trên điện thoại */}
-      <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-3xl border-t border-white/10 px-8 py-6 lg:hidden">
-        <div className="flex justify-around">
-          {['Home', 'Events', 'Send', 'Receive', 'Profile'].map((tab, i) => (
-            <div key={tab} className={`text-center ${i === 4 ? 'text-purple-400 scale-125' : 'text-white/40'}`}>
-              <div className="w-14 h-14 mx-auto mb-2 bg-white/10 rounded-3xl" />
-              <p className="text-sm font-bold">{tab}</p>
-            </div>
-          ))}
         </div>
       </div>
     </div>
