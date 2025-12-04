@@ -1,8 +1,8 @@
 // src/pages/WalletDetail.tsx
-import { useAuth } from '../context/AuthContext'
-import { ArrowLeft, Copy, Download, CheckCircle2, ShieldCheck, AlertTriangle, Key, Lock, Unlock } from 'lucide-react'
-import { NavLink, useNavigate } from 'react-router-dom'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Key, Lock, ShieldCheck, Unlock } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 import { formatBalance, shortenAddress } from '../lib/utils'
 
 export default function WalletDetail() {

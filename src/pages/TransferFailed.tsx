@@ -1,6 +1,6 @@
 // src/pages/TransferFailed.tsx
+import { AlertCircle, Home, RotateCw, Wallet } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { AlertCircle, Home, Wallet, RotateCw, MessageCircle } from 'lucide-react'
 
 export default function TransferFailed() {
   const navigate = useNavigate()

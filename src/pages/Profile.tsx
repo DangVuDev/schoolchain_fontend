@@ -1,23 +1,25 @@
 // src/pages/Profile.tsx – BẢN ĐỈNH CAO NHẤT VIỆT NAM 2025
-import { useAuth } from '../context/AuthContext'
-import { shortenAddress } from '../lib/utils'
-import { 
-  User, Wallet, Shield, Bell, LogOut, ChevronRight, 
-  Copy, CheckCircle2, School2, QrCode, Ticket, Sparkles, Settings
+import {
+  Bell,
+  ChevronRight,
+  LogOut,
+  QrCode,
+  School2,
+  Settings,
+  Shield,
+  Sparkles,
+  Ticket,
+  User, Wallet
 } from 'lucide-react'
-import { useState } from 'react'
 import { NavLink, useNavigate } from 'react-router-dom'
+import { useAuth } from '../context/AuthContext'
 
 export default function Profile() {
-  const { userName = 'Nguyễn Văn A', email, studentId = '22DH110001', walletAddress } = useAuth()
-  const [copied, setCopied] = useState(false)
+  const { userName = 'Nguyễn Văn A', studentId = '22DH110001'} = useAuth()
+
   const navigate = useNavigate()
 
-  const handleCopy = () => {
-    navigator.clipboard.writeText(walletAddress || '')
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
-  }
+  
 
   const handleLogout = () => {
     navigate('/login')

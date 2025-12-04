@@ -1,7 +1,6 @@
+import { ArrowLeft, Calendar, Check, MapPin, Share2, Users, Zap } from 'lucide-react';
 import { useState } from 'react';
-import { ArrowLeft, Share2, Zap, Calendar, MapPin, Users, Ticket, Check } from 'lucide-react';
-import { format } from 'date-fns';
-import { Link, useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { EVENT_MOCK_DATA } from './mock/EventMockData';
 
 const event = EVENT_MOCK_DATA[0]; // Ví dụ lấy event đầu tiên

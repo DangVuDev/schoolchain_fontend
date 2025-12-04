@@ -1,6 +1,6 @@
 // src/pages/SendScan.tsx
+import { ArrowLeft, Flashlight } from 'lucide-react'
 import { useNavigate } from 'react-router-dom'
-import { ArrowLeft, Flashlight, ScanLine } from 'lucide-react'
 
 export default function SendScan() {
   const navigate = useNavigate()

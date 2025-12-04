@@ -1,4 +1,4 @@
-import { ArrowLeft, QrCode, Wallet, Share2, Calendar, MapPin, Users, Globe, ArrowUpRight, CheckCircle } from 'lucide-react';
+import { ArrowLeft, CheckCircle, Wallet } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 
 export default function TicketDetailPage() {

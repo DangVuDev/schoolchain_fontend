@@ -1,7 +1,7 @@
 // src/pages/PersonalInfo.tsx – Liquid Glass 2025 Edition
-import { ArrowLeft, Save, User, Mail, Phone, School2, AlertTriangle, CheckCircle2 } from 'lucide-react'
-import { useNavigate } from 'react-router-dom'
+import { AlertTriangle, ArrowLeft, CheckCircle2, Mail, Phone, Save, School2, User } from 'lucide-react'
 import { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 
 export default function PersonalInfo() {
   const navigate = useNavigate()
@@ -94,7 +94,7 @@ export default function PersonalInfo() {
             <InfoField
               icon={<Mail size={36} className="text-orange-400" />}
               label="Email trường"
-              value="vana.nguyen@hcmut.edu.vn"
+              value={email}
               disabled
               badge="Đã xác minh"
             />
