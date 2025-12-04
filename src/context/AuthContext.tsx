@@ -53,6 +53,9 @@ export default function AuthProvider({ children }: { children: ReactNode }) {
     localStorage.setItem('walletAddress', '0x71C2...9f8a')
     setIsLoggedIn(true)
     setBalance(50000)
+    setEmail('dang19082004@gmail.com')
+    setPhone('0123456789')
+    setStudentId('22DH110089')
     setUserName('Nguyễn Văn A')
     setWalletAddress('0x71C2...9f8a')
   }
