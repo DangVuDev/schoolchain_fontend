@@ -3,7 +3,8 @@ import { useAuth } from '../context/AuthContext'
 import { formatBalance, shortenAddress } from '../lib/utils'
 import {
   ArrowRight, Send, QrCode, Ticket, Sparkles, Copy, Eye, EyeOff,
-  History, CheckCircle, ArrowUpRight, ArrowDownRight
+  History, CheckCircle, ArrowUpRight, ArrowDownRight,
+  ShoppingBag
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
 import { useState } from 'react'
@@ -23,7 +24,8 @@ export default function Home() {
     { to: '/send', icon: Send, label: 'Gửi tiền', gradient: 'from-purple-500 to-violet-600' },
     { to: '/receive', icon: QrCode, label: 'Nhận tiền', gradient: 'from-orange-500 to-amber-500' },
     { to: '/events', icon: Ticket, label: 'Sự kiện', gradient: 'from-emerald-500 to-teal-500' },
-    { to: '/rewards', icon: Sparkles, label: 'Khuyến mãi', gradient: 'from-pink-500 to-rose-500' },
+    { to: '/campus', icon: Sparkles, label: 'Emulation', gradient: 'from-pink-500 to-rose-500' },
+    { to: '/shop', icon: ShoppingBag, label: 'Shopping', gradient: 'from-green-500 to-teal-500' },
   ]
 
   const banners = [
@@ -157,7 +159,7 @@ export default function Home() {
         {/* Quick Actions */}
         <section className="mb-12">
           <h2 className="text-2xl sm:text-3xl font-black mb-6 text-center lg:text-left">Hành động nhanh</h2>
-          <div className="grid grid-cols-2 sm:grid-cols-2 lg:grid-cols-4 gap-5 sm:gap-8 max-w-3xl mx-auto lg:max-w-none">
+          <div className="grid grid-cols-3 sm:grid-cols-3 lg:grid-cols-5 gap-5 sm:gap-8 max-w-3xl mx-auto lg:max-w-none">
             {quickActions.map((action) => (
               <NavLink
                 key={action.to}
@@ -170,7 +172,7 @@ export default function Home() {
                   flex items-center justify-center shadow-2xl
                   group-hover:shadow-purple-500/60 transition-all
                 `}>
-                  <action.icon size={48} className="text-white drop-shadow-2xl" />
+                  <action.icon size={60} className="text-white drop-shadow-2xl" />
                 </div>
                 <p className="mt-3 text-sm sm:text-base lg:text-lg font-bold text-white/90">
                   {action.label}

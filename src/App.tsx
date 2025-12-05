@@ -1,90 +1,76 @@
-// src/App.tsx – LIQUID GLASS 2025 FINAL EDITION (BOTTOMNAV HIỆN ĐÚNG 100%)
-import { BrowserRouter, Routes, Route, Navigate, useLocation } from 'react-router-dom'
+// src/App.tsx – LIQUID GLASS 2025 + CAMPUS EMULATION FULL INTEGRATION
+import { BrowserRouter, Navigate, Route, Routes, useLocation } from 'react-router-dom'
+import BottomNav from './components/BottomNav'
 import AuthProvider, { useAuth } from './context/AuthContext'
 
-import BottomNav from './components/BottomNav'
-
-// === PAGES ===
-import Splash from './pages/Splash'
-import Register from './pages/auth/Register'
-import Passphrase from './pages/Passphrase'
-import RegisterSuccess from './pages/auth/RegisterSuccess'
+// === CÁC PAGE HIỆN TẠI ===
 import Login from './pages/auth/Login'
-
-import Home from './pages/Home'
+import Register from './pages/auth/Register'
+import RegisterSuccess from './pages/auth/RegisterSuccess'
+import BuyTicketConfirmPage from './pages/event/BuyTicketConfirmPage'
+import EventDetailPage from './pages/event/EventDetailPage'
 import EventMarketplacePage from './pages/event/EventMarketplacePage'
-import WalletDetail from './pages/WalletDetail'
 import MyTicketsPage from './pages/event/MyTicketsPage'
-import Profile from './pages/Profile'
-
-import SendSearch from './pages/tranfer/SendSearch'
-import SendScan from './pages/tranfer/SendScan'
+import PaymentFailedPage from './pages/event/PaymentFailedPage'
+import PaymentSuccessPage from './pages/event/PaymentSuccessPage'
+import TicketDetailPage from './pages/event/TicketDetailPage'
+import Home from './pages/Home'
+import Receive from './pages/receive/Receive'
+import Splash from './pages/Splash'
+import Security from './pages/tranfer/Security'
 import SendAmount from './pages/tranfer/SendAmount'
 import SendConfirm from './pages/tranfer/SendConfirm'
 import SendReceipt from './pages/tranfer/SendReceipt'
-import TransferFailed from './pages/TransferFailed'
+import SendScan from './pages/tranfer/SendScan'
+import SendSearch from './pages/tranfer/SendSearch'
 
-import Receive from './pages/receive/Receive'
-import Notifications from './pages/Notifications'
-import PersonalInfo from './pages/PersonalInfo'
-import MyNFTs from './pages/MyNFTs'
-import Security from './pages/tranfer/Security'
+// === THÊM MỚI: 7 PAGE CAMPUS EMULATION ===
+import EmulationLeaderboardPage from './pages/emulation/EmulationLeaderboardPage'
+import EmulationRewardGuidePage from './pages/emulation/EmulationRewardGuidePage'
+import EmulationRewardShopPage from './pages/emulation/EmulationRewardShopPage'
+import EmulationTasksPage from './pages/emulation/EmulationTasksPage'
+import ShopHomePage from './pages/shop/ShopHomePage'
+import WalletDetail from './pages/wallet/WalletDetail'
+import Profile from './pages/setting/Profile'
+import TransactionHistoryPage from './pages/wallet/TransactionHistoryPage'
+import TransferFailed from './pages/tranfer/TransferFailed'
+import Notifications from './pages/setting/Notifications'
+import PersonalInfo from './pages/setting/PersonalInfo'
 
-import EventDetailPage from './pages/event/EventDetailPage'
-import TicketDetailPage from './pages/event/TicketDetailPage'
-import BuyTicketConfirmPage from './pages/event/BuyTicketConfirmPage'
-import PurchaseSuccessPage from './pages/event/PurchaseSuccessPage'
-
-// Danh sách các trang KHÔNG HIỆN BottomNav (chỉ các trang công khai hoặc onboarding)
+// Danh sách các trang KHÔNG HIỆN BottomNav
 const NO_BOTTOM_NAV_ROUTES = [
   '/',
-  '/register',
+  '/login',
   '/register',
   '/passphrase',
   '/success',
-  '/login',
 ]
 
 function AppContent() {
   const { isLoggedIn } = useAuth()
   const location = useLocation()
 
-  // Logic mới: ĐÃ ĐĂNG NHẬP → hiện BottomNav ở MỌI trang (trừ các trang công khai)
+  // Hiện BottomNav khi đã login + không phải trang công khai
   const shouldShowBottomNav = isLoggedIn && !NO_BOTTOM_NAV_ROUTES.includes(location.pathname)
 
   return (
     <>
       <Routes>
-        {/* ==================== PUBLIC ROUTES – Không có BottomNav ==================== */}
+        {/* ==================== PUBLIC ROUTES ==================== */}
         <Route path="/" element={<Splash />} />
-        <Route path="/register" element={<Register />} />
-        <Route path="/passphrase" element={<Passphrase />} />
-        <Route path="/success" element={<RegisterSuccess />} />
         <Route path="/login" element={<Login />} />
+        <Route path="/register" element={<Register />} />
+        <Route path="/success" element={<RegisterSuccess />} />
 
-        {/* ==================== PROTECTED ROUTES – Đã login → Có BottomNav ==================== */}
-        <Route
-          path="/home"
-          element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />}
-        />
-        <Route
-          path="/events"
-          element={isLoggedIn ? <EventMarketplacePage /> : <Navigate to="/login" replace />}
-        />
-        <Route
-          path="/wallet-detail"
-          element={isLoggedIn ? <WalletDetail /> : <Navigate to="/login" replace />}
-        />
-        <Route
-          path="/my-tickets"
-          element={isLoggedIn ? <MyTicketsPage /> : <Navigate to="/login" replace />}
-        />
-        <Route
-          path="/profile"
-          element={isLoggedIn ? <Profile /> : <Navigate to="/login" replace />}
-        />
+        {/* ==================== PROTECTED ROUTES – CŨ ==================== */}
+        <Route path="/home" element={isLoggedIn ? <Home /> : <Navigate to="/login" replace />} />
+        <Route path="/events" element={isLoggedIn ? <EventMarketplacePage /> : <Navigate to="/login" replace />} />
+        <Route path="/my-tickets" element={isLoggedIn ? <MyTicketsPage /> : <Navigate to="/login" replace />} />
+        <Route path="/wallet-detail" element={isLoggedIn ? <WalletDetail /> : <Navigate to="/login" replace />} />
+        <Route path="/profile" element={isLoggedIn ? <Profile /> : <Navigate to="/login" replace />} />
+        <Route path="/transactions" element={isLoggedIn ? <TransactionHistoryPage /> : <Navigate to="/login" replace />} />
 
-        {/* Transfer Flow – Đều có BottomNav */}
+        {/* Transfer Flow */}
         <Route path="/send" element={isLoggedIn ? <SendSearch /> : <Navigate to="/login" />} />
         <Route path="/send/scan" element={isLoggedIn ? <SendScan /> : <Navigate to="/login" />} />
         <Route path="/send/amount" element={isLoggedIn ? <SendAmount /> : <Navigate to="/login" />} />
@@ -92,24 +78,31 @@ function AppContent() {
         <Route path="/send/receipt" element={isLoggedIn ? <SendReceipt /> : <Navigate to="/login" />} />
         <Route path="/send/failed" element={isLoggedIn ? <TransferFailed /> : <Navigate to="/login" />} />
 
-        {/* Các trang khác – Vẫn có BottomNav khi đã login */}
         <Route path="/receive" element={isLoggedIn ? <Receive /> : <Navigate to="/login" />} />
         <Route path="/notifications" element={isLoggedIn ? <Notifications /> : <Navigate to="/login" />} />
         <Route path="/personal-info" element={isLoggedIn ? <PersonalInfo /> : <Navigate to="/login" />} />
         <Route path="/security" element={isLoggedIn ? <Security /> : <Navigate to="/login" />} />
-        <Route path="/nfts" element={isLoggedIn ? <MyNFTs /> : <Navigate to="/login" />} />
-
-        {/* Event Flow – Có BottomNav */}
+  
+        {/* Event Flow */}
         <Route path="/events/:id" element={isLoggedIn ? <EventDetailPage /> : <Navigate to="/login" />} />
         <Route path="/ticket/:tokenId" element={isLoggedIn ? <TicketDetailPage /> : <Navigate to="/login" />} />
         <Route path="/events/buy" element={isLoggedIn ? <BuyTicketConfirmPage /> : <Navigate to="/login" />} />
-        <Route path="/purchase-success" element={isLoggedIn ? <PurchaseSuccessPage /> : <Navigate to="/login" />} />
+        <Route path="/payment-success" element={isLoggedIn ? <PaymentSuccessPage /> : <Navigate to="/login" />} />
+        <Route path="/payment-failed" element={isLoggedIn ? <PaymentFailedPage /> : <Navigate to="/login" />} />
 
-        {/* 404 */}
+        {/* ==================== MỚI: CAMPUS EMULATION ROUTES (ĐÃ LOGIN → CÓ BOTTOMNAV) ==================== */}
+        <Route path="/campus" element={isLoggedIn ? <EmulationLeaderboardPage /> : <Navigate to="/login" />} />
+        <Route path="/campus/tasks" element={isLoggedIn ? <EmulationTasksPage /> : <Navigate to="/login" />} />
+        <Route path="/campus/rewards" element={isLoggedIn ? <EmulationRewardShopPage /> : <Navigate to="/login" />} />
+        <Route path="/campus/guide" element={isLoggedIn ? <EmulationRewardGuidePage /> : <Navigate to="/login" />} />
+
+        <Route path="/shop" element={isLoggedIn ? <ShopHomePage /> : <Navigate to="/login" />} />
+
+        {/* Redirect mặc định */}
         <Route path="*" element={<Navigate to={isLoggedIn ? "/home" : "/"} replace />} />
       </Routes>
 
-      {/* HIỆN BOTTOMNAV Ở TẤT CẢ CÁC TRANG SAU KHI ĐĂNG NHẬP */}
+      {/* BottomNav hiện đúng 100% ở mọi trang đã login */}
       {shouldShowBottomNav && <BottomNav />}
     </>
   )

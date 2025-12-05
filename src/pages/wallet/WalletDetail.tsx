@@ -2,8 +2,8 @@
 import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Key, Lock, ShieldCheck, Unlock } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
-import { formatBalance, shortenAddress } from '../lib/utils'
+import { useAuth } from '../../context/AuthContext'
+import { formatBalance, shortenAddress } from '../../lib/utils'
 
 export default function WalletDetail() {
   const navigate = useNavigate()

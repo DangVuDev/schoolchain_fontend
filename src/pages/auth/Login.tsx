@@ -78,17 +78,7 @@ export default function Login() {
             </button>
           </form>
 
-          <div className="my-8 text-center">
-            <div className="inline-flex items-center gap-3 text-white/60 text-sm">
-              <div className="w-12 h-px bg-white/20" />
-              <span>hoặc</span>
-              <div className="w-12 h-px bg-white/20" />
-            </div>
-            <button className="mt-4 w-full py-4 rounded-2xl bg-white/10 border border-white/20 flex items-center justify-center gap-3 hover:bg-white/15 transition text-sm font-medium">
-              <span className="text-2xl">Face ID</span>
-              Đăng nhập bằng khuôn mặt
-            </button>
-          </div>
+        
 
           <p className="text-center text-white/60 text-sm">
             Chưa có tài khoản?{' '}

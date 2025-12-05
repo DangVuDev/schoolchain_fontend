@@ -1,160 +1,203 @@
 'use client';
 
+import { format, isPast } from 'date-fns';
+import { Calendar, CheckCircle2, Crown, Gift, RefreshCw, Search, XCircle } from 'lucide-react';
 import { useState } from 'react';
-import { Search } from 'lucide-react';
-import { format, differenceInDays } from 'date-fns';
 import { useNavigate } from 'react-router-dom';
-
-interface Ticket {
-  id: string;
-  tokenId: number;
-  eventTitle: string;
-  eventDate: Date;
-  seat: string;
-  type: 'VIP' | 'General' | 'Standard';
-  gradient: string;
-  emoji: string;
-  isPast: boolean;
-}
-
-const mockTickets: Ticket[] = [
-  { id: '1', tokenId: 8042, eventTitle: 'Spring Music Festival 2025', eventDate: new Date('2025-02-20'), seat: 'VIP Section • Seat A1', type: 'VIP', gradient: 'from-purple-600 to-orange-600', emoji: 'Music', isPast: false },
-  { id: '2', tokenId: 8043, eventTitle: 'Spring Music Festival 2025', eventDate: new Date('2025-02-20'), seat: 'VIP Section • Seat A2', type: 'VIP', gradient: 'from-purple-600 to-orange-600', emoji: 'Music', isPast: false },
-  { id: '3', tokenId: 7921, eventTitle: 'Tech Career Fair 2025', eventDate: new Date('2025-01-28'), seat: 'General Admission', type: 'General', gradient: 'from-emerald-600 to-teal-700', emoji: 'Briefcase', isPast: false },
-  { id: '4', tokenId: 7154, eventTitle: 'Art Exhibition Opening', eventDate: new Date('2024-12-10'), seat: 'Standard • Seat B12', type: 'Standard', gradient: 'from-slate-600 to-slate-700', emoji: 'Paintbrush', isPast: true },
-  { id: '5', tokenId: 6847, eventTitle: 'Basketball Championship', eventDate: new Date('2024-11-25'), seat: 'VIP • Seat C5', type: 'VIP', gradient: 'from-slate-600 to-slate-700', emoji: 'Basketball', isPast: true },
-  { id: '6', tokenId: 6234, eventTitle: 'Book Fair & Author Meet', eventDate: new Date('2024-10-15'), seat: 'General Admission', type: 'General', gradient: 'from-slate-600 to-slate-700', emoji: 'Books', isPast: true },
+const mockTickets: any[] = [
+  {
+    _id: "67f8d1a2c9e8b3a1f9d2e4c1",
+    eventId: "evt_spring2025" as any,
+    userId: "usr_123" as any,
+    ticketTypeName: "VIP Platinum",
+    ownerName: "Nguyễn Văn An",
+    ownerStudentId: "22DH110123",
+    ownerEmail: "an.nguyen@hcmut.edu.vn",
+    ownerPhone: "0901234567",
+    ticketCode: "SMF2025-VIP001",
+    qrCodeDataUrl: "https://api.qrserver.com/v1/create-qr-code/?size=500x500&data=SMF2025-VIP001",
+    pricePaid: 5000000,
+    paymentMethod: "vndc",
+    paymentTxHash: "0x123abc...xyz789",
+    paymentTimestamp: new Date("2025-01-15"),
+    benefits: ["Backstage Pass", "Meet & Greet", "Free Merch", "Priority Entry"],
+    status: "valid",
+    isTransferable: true,
+    originalOwnerId: "usr_123" as any,
+    purchasedAt: new Date("2025-01-15"),
+  },
+  {
+    _id: "67f8d1a2c9e8b3a1f9d2e4c2",
+    eventId: "evt_techfair2025" as any,
+    userId: "usr_123" as any,
+    ticketTypeName: "Early Bird",
+    ownerName: "Trần Thị Mai",
+    ownerEmail: "mai.tran@gmail.com",
+    ticketCode: "TCF2025-EB456",
+    pricePaid: 350000,
+    paymentMethod: "promo",
+    discountCode: "WELCOME50",
+    benefits: ["Fast-track Entry", "Free Coffee"],
+    status: "valid",
+    isTransferable: false,
+    originalOwnerId: "usr_123" as any,
+    purchasedAt: new Date("2025-01-10"),
+  },
+  {
+    _id: "67f8d1a2c9e8b3a1f9d2e4c3",
+    eventId: "evt_art2024" as any,
+    userId: "usr_123" as any,
+    ticketTypeName: "Standard",
+    ownerName: "Lê Hoàng Minh",
+    ticketCode: "ART2024-STD789",
+    pricePaid: 0,
+    paymentMethod: "gift",
+    benefits: ["Free Entry", "Exhibition Guide"],
+    status: "used",
+    checkedInAt: new Date("2024-12-10T18:30:00"),
+    checkinMethod: "qr",
+    originalOwnerId: "usr_123" as any,
+    purchasedAt: new Date("2024-11-20"),
+  },
+  {
+    _id: "67f8d1a2c9e8b3a1f9d2e4c4",
+    eventId: "evt_concert2024" as any,
+    userId: "usr_123" as any,
+    ticketTypeName: "VIP",
+    ownerName: "Phạm Kim Ngân",
+    ticketCode: "CON2024-VIP333",
+    pricePaid: 8000000,
+    paymentMethod: "vndc",
+    status: "transferred",
+    transferredTo: "usr_999" as any,
+    transferredAt: new Date("2024-12-01"),
+    isTransferable: true,
+    originalOwnerId: "usr_123" as any,
+    purchasedAt: new Date("2024-10-15"),
+  },
 ];
 
-type FilterType = 'upcoming' | 'past' | 'all';
+const eventInfo = {
+  evt_spring2025: { title: "Spring Music Festival 2025", date: new Date("2025-02-20T19:00:00"), emoji: "Music" },
+  evt_techfair2025: { title: "Tech Career Fair 2025", date: new Date("2025-01-28T09:00:00"), emoji: "Briefcase" },
+  evt_art2024: { title: "Art Exhibition Opening 2024", date: new Date("2024-12-10"), emoji: "Paintbrush" },
+  evt_concert2024: { title: "Sơn Tùng M-TP Live Concert", date: new Date("2024-11-25"), emoji: "Microphone" },
+};
+
+type FilterType = 'all' | 'upcoming' | 'used' | 'transferred';
 
 export default function MyTicketsPage() {
-  const [filter, setFilter] = useState<FilterType>('upcoming');
+  const [filter, setFilter] = useState<FilterType>('all');
   const [searchTerm, setSearchTerm] = useState('');
+  const navigate = useNavigate();
 
-  const filtered = mockTickets
-    .filter(t => t.eventTitle.toLowerCase().includes(searchTerm.toLowerCase()))
-    .filter(t => filter === 'all' || (filter === 'upcoming' && !t.isPast) || (filter === 'past' && t.isPast));
+  const ticketsWithEvent = mockTickets.map(t => ({
+    ...t,
+    event: eventInfo[t.eventId as keyof typeof eventInfo] || { title: "Unknown Event", date: new Date(), emoji: "Ticket" },
+    isPast: isPast(eventInfo[t.eventId as keyof typeof eventInfo]?.date || new Date()),
+  }));
+
+  const filtered = ticketsWithEvent
+    .filter(t => 
+      t.ticketCode.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.event.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      t.ownerName.toLowerCase().includes(searchTerm.toLowerCase())
+    )
+    .filter(t => {
+      if (filter === 'all') return true;
+      if (filter === 'upcoming') return t.status === 'valid' && !t.isPast;
+      if (filter === 'used') return t.status === 'used';
+      if (filter === 'transferred') return t.status === 'transferred';
+      return false;
+    });
 
   const counts = {
-    upcoming: mockTickets.filter(t => !t.isPast).length,
-    past: mockTickets.filter(t => t.isPast).length,
-    all: mockTickets.length,
+    all: ticketsWithEvent.length,
+    upcoming: ticketsWithEvent.filter(t => t.status === 'valid' && !t.isPast).length,
+    used: ticketsWithEvent.filter(t => t.status === 'used').length,
+    transferred: ticketsWithEvent.filter(t => t.status === 'transferred').length,
+  };
+
+  const getStatusBadge = (ticket: typeof ticketsWithEvent[0]) => {
+    const base = "px-3 py-1 rounded-full text-xs font-bold flex items-center gap-1";
+    if (ticket.status === 'valid' && !ticket.isPast) return <span className={`${base} bg-emerald-500/20 text-emerald-400 border border-emerald-500/50`}><CheckCircle2 size={12} /> Còn hiệu lực</span>;
+    if (ticket.status === 'used') return <span className={`${base} bg-cyan-500/20 text-cyan-400 border border-cyan-500/50`}><CheckCircle2 size={12} /> Đã sử dụng</span>;
+    if (ticket.status === 'transferred') return <span className={`${base} bg-orange-500/20 text-orange-400 border border-orange-500/50`}><RefreshCw size={12} /> Đã chuyển</span>;
+    if (ticket.status === 'cancelled') return <span className={`${base} bg-red-500/20 text-red-400 border border-red-500/50`}><XCircle size={12} /> Đã hủy</span>;
+    return <span className={`${base} bg-gray-500/20 text-gray-400`}>Không xác định</span>;
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
-      <div className="container mx-auto px-6 pt-16 pb-20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white pb-20">
+      <div className="container mx-auto px-4 pt-8 sm:px-6 sm:pt-12">
         {/* Header */}
-        <div className="flex flex-col md:flex-row justify-between items-start md:items-center mb-12 gap-6">
-          <div>
-            <h1 className="text-5xl md:text-6xl font-black mb-3">My NFT Tickets</h1>
-            <p className="text-xl text-gray-400">Your event ticket collection • {counts.all} Total</p>
-          </div>
-          <div className="relative w-full md:w-96">
-            <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-6 h-6 text-gray-400" />
-            <input
-              type="text"
-              placeholder="Search tickets..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              className="w-full pl-14 pr-6 py-5 bg-white/10 backdrop-blur-xl border border-white/20 rounded-xl focus:outline-none focus:border-purple-500 transition text-lg"
-            />
-          </div>
+        <div className="mb-10">
+          <h1 className="text-4xl sm:text-5xl md:text-6xl font-black mb-3">Vé của tôi</h1>
+          <p className="text-lg sm:text-xl text-gray-400">Quản lý tất cả vé NFT • {counts.all} vé</p>
         </div>
 
-        {/* Filter Tabs */}
-        <div className="flex gap-4 mb-12 flex-wrap">
-          {(['upcoming', 'past', 'all'] as FilterType[]).map((f) => (
+        {/* Search */}
+        <div className="relative max-w-xl mx-auto mb-8">
+          <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <input
+            type="text"
+            placeholder="Tìm mã vé, sự kiện, tên..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+            className="w-full pl-12 pr-6 py-4 bg-white/10 backdrop-blur-xl border border-white/20 rounded-2xl focus:outline-none focus:border-purple-500 transition text-base"
+          />
+        </div>
+
+        {/* Filters */}
+        <div className="flex flex-wrap gap-3 justify-center mb-10">
+          {(['all', 'used', 'transferred', 'upcoming'] as FilterType[]).map((f) => (
             <button
               key={f}
               onClick={() => setFilter(f)}
-              className={`px-8 py-4 rounded-xl font-bold text-lg transition-all ${
+              className={`px-6 py-3 rounded-xl font-bold text-sm sm:text-base transition-all ${
                 filter === f
-                  ? 'bg-gradient-to-r from-purple-600 to-orange-600 shadow-2xl shadow-purple-600/50'
-                  : 'bg-white/10 backdrop-blur-md border-2 border-slate-700 text-gray-400 hover:border-purple-500 hover:text-white'
+                  ? 'bg-gradient-to-r from-purple-600 to-orange-600 shadow-xl'
+                  : 'bg-white/10 border border-white/20 text-gray-400 hover:border-purple-500 hover:text-white'
               }`}
             >
-              {f === 'upcoming' && 'Upcoming'}
-              {f === 'past' && 'Past Events'}
-              {f === 'all' && 'All Tickets'}
-              {' '}(<span className={filter === f ? 'text-white' : ''}>{counts[f]}</span>)
+              {f === 'upcoming' && `Sắp tới (${counts.upcoming})`}
+              {f === 'used' && `Đã dùng (${counts.used})`}
+              {f === 'transferred' && `Đã chuyển (${counts.transferred})`}
+              {f === 'all' && `Tất cả (${counts.all})`}
             </button>
           ))}
         </div>
 
-        {/* Tickets Grid */}
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8">
+        {/* Ticket Grid */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
           {filtered.map((ticket) => (
-            <TicketCard key={ticket.id} ticket={ticket} />
+            <div
+              key={ticket._id}
+              onClick={() => navigate(`/ticket/${ticket.ticketCode}`, { state: ticket })}
+              className="group bg-white/5 backdrop-blur-xl rounded-2xl overflow-hidden border border-white/10 hover:border-purple-500/50 transition-all duration-300 hover:shadow-2xl hover:shadow-purple-600/20 cursor-pointer"
+            >
+              <div className="relative h-48 bg-gradient-to-br from-purple-600 to-orange-600 flex items-center justify-center">
+                <div className="text-8xl">{ticket.event.emoji}</div>
+                {ticket.ticketTypeName.includes('VIP') && <Crown className="absolute top-4 right-4 text-yellow-400" size={32} />}
+                {ticket.paymentMethod === 'gift' && <Gift className="absolute top-4 left-4 text-pink-400" size={28} />}
+                <div className="absolute bottom-3 left-3 text-xs font-bold bg-black/50 backdrop-blur px-3 py-1 rounded-full">
+                  {ticket.ticketCode}
+                </div>
+              </div>
+
+              <div className="p-5 space-y-3">
+                <h3 className="font-black text-lg line-clamp-2">{ticket.event.title}</h3>
+                <p className="text-sm text-gray-400 flex items-center gap-2">
+                  <Calendar size={14} />
+                  {format(ticket.event.date, 'dd/MM/yyyy')}
+                </p>
+                <div className="flex items-center justify-between">
+                  <span className="text-sm font-bold text-purple-400">{ticket.ticketTypeName}</span>
+                  {getStatusBadge(ticket)}
+                </div>
+              </div>
+            </div>
           ))}
-        </div>
-      </div>
-    </div>
-  );
-}
-
-// Component con có navigate
-function TicketCard({ ticket }: { ticket: Ticket }) {
-  const navigate = useNavigate();
-  const daysLeft = differenceInDays(ticket.eventDate, new Date());
-
-  const goToDetail = () => {
-    navigate(`/ticket/${ticket.tokenId}`);
-    // Hoặc: navigate(`/my-tickets/${ticket.id}`);
-  };
-
-  return (
-    <div
-      onClick={goToDetail}
-      className="group glass-card rounded-2xl overflow-hidden cursor-pointer border-2 border-purple-500/30 hover:border-purple-500 transition-all duration-500 hover:shadow-2xl hover:shadow-purple-600/30 hover:-translate-y-2"
-    >
-      <div className="relative">
-        <div className={`h-80 bg-gradient-to-br ${ticket.gradient} flex items-center justify-center text-9xl`}>
-          {ticket.emoji}
-          <div className="absolute top-4 right-4 bg-white/30 backdrop-blur-md px-5 py-3 rounded-lg font-black text-sm">
-            NFT #{ticket.tokenId}
-          </div>
-        </div>
-
-        {!ticket.isPast && (
-          <div className="absolute bottom-4 left-4 bg-emerald-500 px-5 py-3 rounded-lg font-bold shadow-lg shadow-emerald-500/50">
-            {daysLeft > 0 ? `${daysLeft} days left` : 'Today!'}
-          </div>
-        )}
-        {ticket.isPast && (
-          <div className="absolute bottom-4 left-4 bg-slate-600 px-5 py-3 rounded-lg font-bold">
-            Attended
-          </div>
-        )}
-      </div>
-
-      <div className="p-6">
-        <h3 className="text-2xl font-bold mb-3 line-clamp-2">{ticket.eventTitle}</h3>
-        <p className="text-gray-400 text-sm mb-2">
-          Calendar {format(ticket.eventDate, 'MMM dd, yyyy • h:mm a')}
-        </p>
-        <p className="text-gray-400 text-sm mb-6">{ticket.seat}</p>
-
-        <div className="grid grid-cols-2 gap-3">
-          <button
-            onClick={(e) => {
-              e.stopPropagation(); // Ngăn click toàn card
-              goToDetail();
-            }}
-            className="bg-gradient-to-r from-purple-600 to-orange-600 py-4 rounded-xl font-bold hover:scale-105 transition"
-          >
-            View QR
-          </button>
-          <button
-            onClick={(e) => {
-              e.stopPropagation();
-              goToDetail();
-            }}
-            className="border-2 border-slate-700 py-4 rounded-xl font-bold hover:bg-white/10 transition"
-          >
-            Details
-          </button>
         </div>
       </div>
     </div>

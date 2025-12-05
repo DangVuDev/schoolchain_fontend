@@ -13,7 +13,7 @@ import {
   Wallet,
 } from 'lucide-react'
 import { NavLink, useNavigate } from 'react-router-dom'
-import { useAuth } from '../context/AuthContext'
+import { useAuth } from '../../context/AuthContext'
 
 export default function Profile() {
   const { userName = 'Nguyễn Văn A', studentId = '22DH110001' } = useAuth()

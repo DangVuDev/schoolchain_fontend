@@ -48,7 +48,7 @@ export default function BottomNav() {
                       <Icon
                         className={`w-7 h-7 transition-all duration-300 ${
                           isActive
-                            ? 'text-transparent bg-clip-text bg-gradient-to-r from-purple-400 to-orange-400 drop-shadow-lg'
+                            ? 'text-white drop-shadow-[0_0_10px_rgba(168,85,247,0.8)]'
                             : 'text-gray-400'
                         }`}
                         strokeWidth={isActive ? 2.8 : 2}
