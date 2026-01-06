@@ -7,12 +7,20 @@ import {
   ShoppingBag
 } from 'lucide-react'
 import { NavLink } from 'react-router-dom'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 
 export default function Home() {
-  const { balance = 1247350, walletAddress = '0x71C7656EC7ab88b098defB751B7401B5f6d8976F', userName = 'Mai Anh' } = useAuth()
+  const { balance, walletAddress, userName,getBalanceInfo,getUserInfo } = useAuth()
+  console.log("Wallet Address in Home:", walletAddress);
   const [showBalance, setShowBalance] = useState(true)
   const [copied, setCopied] = useState(false)
+
+  useEffect(()=>{
+    getUserInfo()
+    getBalanceInfo()
+  },[])
+
+
 
   const handleCopy = () => {
     navigator.clipboard.writeText(walletAddress)

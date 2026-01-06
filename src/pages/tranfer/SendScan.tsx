@@ -1,258 +1,239 @@
-// src/pages/tranfer/SendScan.tsx
-import { ArrowLeft, Flashlight } from "lucide-react"
-import { useNavigate } from "react-router-dom"
-import { useEffect, useRef, useState } from "react"
+// src/pages/transfer/SendScan.tsx
 import { Html5Qrcode } from "html5-qrcode"
+import { ArrowLeft, Bug, Flashlight, Image as ImageIcon, ScanLine } from "lucide-react"
+import { useEffect, useRef, useState, type ChangeEvent } from "react"
+import { useNavigate } from "react-router-dom"
 
 export default function SendScan() {
   const navigate = useNavigate()
-  const qrRef = useRef<Html5Qrcode | null>(null)
+  const scannerRef = useRef<Html5Qrcode | null>(null)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+  const isPausedRef = useRef(false)
+  
   const [flashOn, setFlashOn] = useState(false)
-  const [cameraId, setCameraId] = useState<string | null>(null)
-  const [torchSupported, setTorchSupported] = useState<boolean | null>(null)
+  const [logs, setLogs] = useState<string[]>([])
+  const [showDebug, setShowDebug] = useState(false)
+  const [, setError] = useState<string | null>(null)
 
-  // Lấy danh sách camera khi component mount
+  const addLog = (msg: string) => {
+    setLogs(prev => [msg, ...prev].slice(0, 8))
+    console.log(`[SCANNER]: ${msg}`)
+  }
+
   useEffect(() => {
-    Html5Qrcode.getCameras()
-      .then((devices) => {
-        if (devices && devices.length > 0) {
-          // chọn camera sau (nếu cần logic chọn camera sau)
-          setCameraId(devices[0].id)
-        }
-      })
-      .catch(() => {
-        console.warn("Không tìm thấy camera")
-      })
-  }, [])
+    let isMounted = true
+    console.log(isMounted)
 
-  // Khởi động scanner mỗi khi cameraId thay đổi
-  useEffect(() => {
-    if (!cameraId) return
-
-    const elementId = "qr-reader"
-    const html5Qr = new Html5Qrcode(elementId, { verbose: false })
-    qrRef.current = html5Qr
-
-    // Thử detect torch support (nếu trình duyệt cho phép truy cập track)
-    const detectTorch = async () => {
+    const initScanner = async () => {
       try {
-        // bật camera tạm để kiểm tra capabilities
-        const stream = await navigator.mediaDevices.getUserMedia({
-          video: { deviceId: { exact: cameraId } },
-        })
-        const track = stream.getVideoTracks()[0]
-        const capabilities: any = (track.getCapabilities && track.getCapabilities()) || {}
-        // Nếu device hỗ trợ 'torch' trong capabilities
-        if (capabilities && "torch" in capabilities) {
-          setTorchSupported(true)
-        } else {
-          setTorchSupported(false)
+        const cameras = await Html5Qrcode.getCameras()
+        if (!cameras || cameras.length === 0) {
+          setError("Không tìm thấy camera")
+          return
         }
-        // stop stream ngay
-        track.stop()
-      } catch {
-        setTorchSupported(false)
+
+        const backCamera = cameras.find(c => c.label.toLowerCase().includes('back')) || cameras[cameras.length - 1]
+        const scanner = new Html5Qrcode("qr-reader")
+        scannerRef.current = scanner
+
+        await scanner.start(
+          backCamera.id,
+          {
+            fps: 20,
+            qrbox: (w) => ({ width: w * 0.8, height: w * 0.8 }),
+            aspectRatio: 1.0,
+          },
+          (text) => handleParsedText(text),
+          () => {} 
+        )
+        addLog("🟢 Camera đang chạy...")
+      } catch (err) {
+        addLog(`💥 Lỗi: ${err}`)
       }
     }
 
-    detectTorch().catch(() => setTorchSupported(false))
-
-    // Start scanning
-    html5Qr
-      .start(
-        { deviceId: { exact: cameraId } },
-        {
-          fps: 30,
-          qrbox: { width: 280, height: 280 },
-          aspectRatio: 1.0,
-          videoConstraints: {
-            facingMode: "environment",
-          },
-        } as any,
-        (decodedText) => {
-          const addr = decodedText.trim()
-          if (addr) {
-            // stop scanner then navigate
-            html5Qr
-              .stop()
-              .catch(() => {})
-              .finally(() => {
-                navigate("/send/amount", { state: { recipientAddress: addr } })
-              })
-          }
-        },
-        (errorMessage) => {
-          // ignore frequent "no QR found" messages
-          console.debug("scan err", errorMessage)
-        }
-      )
-      .catch((e) => {
-        console.warn("Không thể khởi động scanner:", e)
-      })
+    initScanner()
 
     return () => {
-      html5Qr.stop().catch(() => {})
+      isMounted = false
+      if (scannerRef.current) {
+        scannerRef.current.stop().catch(() => {})
+      }
     }
-  }, [cameraId, navigate])
+  }, [])
 
-  // Toggle torch (nếu supported)
-  const toggleTorch = async () => {
-    if (!torchSupported) {
-      // Nếu không hỗ trợ, chỉ đổi trạng thái UI
-      setFlashOn((p) => !p)
-      return
+  const handleParsedText = async (text: string) => {
+  const cleanText = text.trim();
+  addLog(`🔍 Phát hiện: ${cleanText.slice(0, 30)}...`);
+  
+  let recipientAddress = cleanText;
+  let preFilledAmount = "";
+
+  if (cleanText.includes("?")) {
+    const [addr, query] = cleanText.split("?");
+    recipientAddress = addr;
+    const params = new URLSearchParams(query);
+    preFilledAmount = params.get("amount") || "";
+  }
+
+  if (/^0x[a-fA-F0-9]{40}$/i.test(recipientAddress)) {
+    addLog("✅ Khớp ví! Đang chuyển hướng...");
+
+    try {
+      // CHỈ dừng scanner nếu đang chạy camera (isScanning là true)
+      // Khi quét từ File, isScanning sẽ là false -> Bỏ qua lệnh này sẽ hết lỗi removeChild
+      if (scannerRef.current && scannerRef.current.isScanning) {
+        await scannerRef.current.stop();
+        console.log("Scanner stopped successfully");
+      }
+    } catch (err) {
+      console.warn("Lỗi khi dừng scanner (có thể bỏ qua):", err);
     }
 
-    const html5Qr = qrRef.current
-    if (!html5Qr) {
-      setFlashOn((p) => !p)
-      return
+    // Sử dụng setTimeout để đảm bảo UI đã ổn định trước khi chuyển trang
+    setTimeout(() => {
+      navigate('/send/amount', { 
+        state: { 
+          recipient: { address: recipientAddress.trim() },
+          amount: preFilledAmount.trim() 
+        } 
+      });
+    }, 100);
+
+  } else {
+    addLog("❌ QR không chứa địa chỉ ví hợp lệ");
+  }
+};
+
+
+
+  // Tính năng chọn ảnh từ máy
+  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    addLog(`📂 Đang đọc file: ${file.name}`)
+    
+    // Tạm dừng scanner nếu đang chạy để giải phóng tài nguyên
+    if (scannerRef.current?.isScanning) {
+        await scannerRef.current.pause()
+        isPausedRef.current = true
     }
 
     try {
-      // Để bật/ tắt torch an toàn: lấy track và applyConstraints
-      const stream = await navigator.mediaDevices.getUserMedia({
-        video: { deviceId: cameraId ? { exact: cameraId } : undefined },
-      })
-      const track = stream.getVideoTracks()[0]
-      // @ts-ignore - applyConstraints may accept { advanced: [{ torch: true }] } on supported browsers
-      await (track.applyConstraints as any)({
-        advanced: [{ torch: !flashOn }],
-      })
-      // Cập nhật state và tắt track sau khi set (browser giữ torch cho track hiện tại)
-      setFlashOn((p) => !p)
-      // Không stop track ngay lập tức nếu muốn torch giữ, nhưng để an toàn stop
-      setTimeout(() => {
-        try {
-          track.stop()
-        } catch {}
-      }, 500)
-    } catch (e) {
-      console.warn("Không thể thay đổi torch:", e)
-      setFlashOn((p) => !p) // chỉ đổi UI nếu thất bại
+      const scanner = new Html5Qrcode("qr-reader") // Dùng instance hiện tại
+      const result = await scanner.scanFile(file, true)
+      handleParsedText(result)
+    } catch (err) {
+      addLog("❌ Không tìm thấy mã QR trong ảnh này")
+      alert("Không tìm thấy mã QR trong ảnh. Hãy thử ảnh rõ nét hơn!")
+    } finally {
+      if (isPausedRef.current && scannerRef.current) {
+          scannerRef.current.resume()
+          isPausedRef.current = false
+      }
     }
   }
 
-  // ... (phần import và logic JS giữ nguyên hoàn toàn)
-
-return (
-  <div className="fixed inset-0 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white overflow-hidden">
-
-    {/* OVERLAY */}
-    <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-black/70 pointer-events-none" />
-
-    {/* HEADER */}
-    <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center z-50">
-      <button
-        onClick={() => navigate(-1)}
-        className="p-4 rounded-full bg-white/20 backdrop-blur-2xl hover:bg-white/30 active:scale-95 transition-all shadow-2xl"
-      >
-        <ArrowLeft size={32} />
-      </button>
-
-      <button
-        onClick={toggleTorch}
-        className={`px-8 py-4 rounded-2xl font-black text-lg flex items-center gap-3 transition-all active:scale-95 shadow-xl ${
-          flashOn
-            ? "bg-yellow-500 text-black shadow-yellow-500/70 animate-pulse"
-            : "bg-white/25 backdrop-blur-xl border border-white/30 hover:bg-white/35"
-        }`}
-      >
-        <Flashlight size={28} />
-        {flashOn ? "TẮT ĐÈN" : "BẬT ĐÈN"}
-      </button>
-    </div>
-
-    {/* CAMERA CONTAINER - ĐÃ FIX HOÀN HẢO */}
-    <div className="absolute inset-0 flex items-center justify-center overflow-hidden bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950">
-      <div className="relative w-80 h-80">
-        <div id="qr-reader" className="absolute inset-0 w-full h-full" />
-
-        {/* CSS ÉP CHẾT VIDEO RA GIỮA */}
-        <style>{`
-          #qr-reader video {
-            position: absolute !important;
-            top: 50% !important;
-            left: 50% !important;
-            transform: translate(-50%, -50%) !important;
-            min-width: 100% !important;
-            min-height: 100% !important;
-            width: auto !important;
-            height: auto !important;
-            object-fit: cover !important;
-          }
-        `}</style>
-      </div>
-    </div>
-
-    {/* KHUNG QUÉT QR SIÊU ĐẸP 2025 - NHƯ APP XỊN */}
-<div className="absolute inset-0 flex items-center justify-center pointer-events-none z-40">
-  <div className="relative w-90 h-90">
-
-    {/* 4 GÓC SCAN HIỆN ĐẠI - MỎNG, SÁNG, CÓ HIỆU ỨNG NEON */}
-    {[0, 1, 2, 3].map((i) => (
-      <div
-        key={i}
-        className="absolute w-24 h-24 border-t-4 border-l-4 border-purple-400 
-                   shadow-lg shadow-purple-500/50 
-                   animate-[cornerPulse_3s_ease-in-out_infinite]"
-        style={{
-          top: i < 2 ? "0" : "auto",
-          bottom: i >= 2 ? "0" : "auto",
-          left: i % 2 === 0 ? "0" : "auto",
-          right: i % 2 === 1 ? "0" : "auto",
-          borderTop: i < 2 ? "4px solid" : "none",
-          borderLeft: i % 2 === 0 ? "4px solid" : "none",
-          borderRight: i % 2 === 1 ? "4px solid transparent" : "none",
-          borderBottom: i >= 2 ? "4px solid transparent" : "none",
-          borderRadius: 
-            i === 0 ? "20px 0 0 0" :
-            i === 1 ? "0 20px 0 0" :
-            i === 2 ? "0 0 0 20px" : "0 0 20px 0",
-        }}
-      >
-        {/* Hiệu ứng phát sáng nhỏ ở góc */}
-        <div className="absolute w-8 h-8 bg-purple-400 rounded-full blur-xl opacity-60 
-                        animate-ping -top-2 -left-2" 
-             style={{ animationDelay: `${i * 0.3}s` }} />
-      </div>
-    ))}
-
-    {/* LASER QUÉT - MỀM MẠI, ĐỘC, ĐẸP LUNG LINH */}
-    <div className="absolute left-0 right-0 top-1/2 -translate-y-1/2 h-1 
-                    bg-gradient-to-r from-transparent via-purple-400 to-transparent
-                    shadow-lg shadow-purple-500/80
-                    opacity-80">
-      <div className="absolute inset-x-0 h-full bg-purple-300 blur-md animate-[laserScan_2.8s_ease-in-out_infinite]" />
-      <div className="absolute inset-x-10 h-0.5 bg-white/80 blur-sm animate-[laserScan_2.8s_ease-in-out_infinite]" 
-           style={{ animationDelay: "0.1s" }} />
-    </div>
-
-    {/* VÒNG TRÒN NHỎ GIỮA - HIỆU ỨNG BREATHING */}
-    <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 
-                    w-2 h-2 bg-purple-400 rounded-full 
-                    shadow-2xl shadow-purple-500/80 
-                    animate-ping" />
-  </div>
-</div>
-
-    {/* Nút nhập tay */}
-    <div className="absolute bottom-44 left-1/2 -translate-x-1/2 w-full max-w-md px-8 z-50">
-      <button
-        onClick={() => navigate("/send")}
-        className="w-full py-6 bg-gradient-to-r from-purple-600/60 to-orange-600/60 backdrop-blur-3xl rounded-3xl border-2 border-white/30 font-black text-2xl hover:scale-105 active:scale-95 transition-all shadow-2xl"
-      >
-        Nhập địa chỉ ví thủ công
-      </button>
-    </div>
-
-    {/* LASER KEYFRAMES */}
-    <style>{`
-      @keyframes laser {
-        0%, 100% { transform: translateY(-160px); opacity: 0; }
-        50%      { transform: translateY(160px); opacity: 1; }
+  const toggleTorch = async () => {
+    try {
+      const videoTrack = (scannerRef.current as any)._videoElement?.srcObject?.getVideoTracks()[0]
+      if (videoTrack) {
+        const newState = !flashOn
+        await videoTrack.applyConstraints({ advanced: [{ torch: newState }] })
+        setFlashOn(newState)
       }
-    `}</style>
-  </div>
-)
+    } catch (e) {
+      addLog("💡 Thiết bị không hỗ trợ đèn pin")
+    }
+  }
+
+  return (
+    <div className="fixed inset-0 bg-black text-white overflow-hidden flex flex-col font-sans">
+      {/* Background Decor */}
+      <div className="absolute inset-0 bg-gradient-to-t from-black via-transparent to-black/50 z-10 pointer-events-none" />
+
+      {/* Header */}
+      <div className="absolute top-0 inset-x-0 p-6 flex justify-between items-center z-50">
+        <button onClick={() => navigate(-1)} className="p-3 rounded-2xl bg-white/10 backdrop-blur-xl border border-white/20 active:scale-90 transition-all">
+          <ArrowLeft size={24} />
+        </button>
+        <div className="flex gap-2">
+          <button onClick={() => setShowDebug(!showDebug)} className={`p-3 rounded-2xl transition-all ${showDebug ? 'bg-green-500 text-black' : 'bg-white/10'}`}>
+            <Bug size={24} />
+          </button>
+          <button onClick={toggleTorch} className={`p-3 rounded-2xl transition-all ${flashOn ? 'bg-yellow-500 text-black' : 'bg-white/10'}`}>
+            <Flashlight size={24} />
+          </button>
+        </div>
+      </div>
+
+      {/* Debug Logs */}
+      {showDebug && (
+        <div className="absolute top-24 left-6 right-6 z-50 bg-black/90 p-4 rounded-2xl border border-green-500/30 font-mono text-[10px] text-green-400">
+          {logs.map((log, i) => <div key={i} className="mb-1 border-b border-white/5 pb-1">{`> ${log}`}</div>)}
+        </div>
+      )}
+
+      {/* Scanner Viewport */}
+      <div className="relative flex-1">
+        <div id="qr-reader" className="w-full h-full" />
+        
+        {/* Scan UI Frame */}
+        <div className="absolute inset-0 z-20 pointer-events-none flex flex-col items-center justify-center">
+            <div className="w-[75vw] h-[75vw] max-w-[350px] max-h-[350px] relative">
+                <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-purple-500 rounded-tl-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-purple-500 rounded-tr-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-purple-500 rounded-bl-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-purple-500 rounded-br-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+                
+                <div className="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-[0_0_20px_rgba(168,85,247,1)] animate-scan" />
+            </div>
+            <p className="mt-8 text-white/60 font-medium tracking-widest text-sm uppercase">Đang tìm mã QR...</p>
+        </div>
+      </div>
+
+      {/* Footer Actions */}
+      <div className="absolute bottom-0 inset-x-0 p-8 z-50 bg-gradient-to-t from-black to-transparent space-y-4">
+        <div className="grid grid-cols-2 gap-4">
+          {/* Nút chọn ảnh */}
+          <button 
+            onClick={() => fileInputRef.current?.click()}
+            className="flex flex-col items-center gap-2 py-4 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl hover:bg-white/10 transition-all active:scale-95"
+          >
+            <ImageIcon className="text-blue-400" size={28} />
+            <span className="text-xs font-bold uppercase tracking-tighter">Chọn ảnh QR</span>
+            <input 
+              ref={fileInputRef}
+              type="file" 
+              accept="image/*" 
+              className="hidden" 
+              onChange={handleFileChange}
+            />
+          </button>
+
+          {/* Nút nhập tay */}
+          <button 
+            onClick={() => navigate("/send")}
+            className="flex flex-col items-center gap-2 py-4 bg-white/5 backdrop-blur-3xl border border-white/10 rounded-3xl hover:bg-white/10 transition-all active:scale-95"
+          >
+            <ScanLine className="text-purple-400" size={28} />
+            <span className="text-xs font-bold uppercase tracking-tighter">Nhập tay</span>
+          </button>
+        </div>
+
+        <div className="h-1 w-20 bg-white/20 mx-auto rounded-full" />
+      </div>
+
+      <style>{`
+        #qr-reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
+        #qr-reader__dashboard { display: none !important; }
+        @keyframes scan {
+          0%, 100% { top: 5%; opacity: 0; }
+          50% { top: 95%; opacity: 1; }
+        }
+        .animate-scan { animation: scan 3s ease-in-out infinite; }
+      `}</style>
+    </div>
+  )
 }

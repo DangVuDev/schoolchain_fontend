@@ -1,9 +1,11 @@
 // src/pages/WalletDetail.tsx
 import { AlertTriangle, ArrowLeft, CheckCircle2, Copy, Key, Lock, ShieldCheck, Unlock } from 'lucide-react'
-import { useState } from 'react'
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { useAuth } from '../../context/AuthContext'
 import { formatBalance, shortenAddress } from '../../lib/utils'
+import { updatePinCodeUsingOldPin, updatePinCodeUsingPrivateKey } from '../../service/user.service'
+import { getWalletBalance, revertedPrivateKey } from '../../service/wallet.service'
 
 export default function WalletDetail() {
   const navigate = useNavigate()
@@ -13,6 +15,7 @@ export default function WalletDetail() {
   const [showPrivateKey, setShowPrivateKey] = useState(false)
   const [pinInput, setPinInput] = useState('')
   const [copiedPrivateKey, setCopiedPrivateKey] = useState(false)
+  const [realPrivateKey, setRealPrivateKey] = useState('') // Ví dụ giả lập
 
   // State cho Đổi mã bảo mật
   const [showChangePin, setShowChangePin] = useState(false)
@@ -23,9 +26,31 @@ export default function WalletDetail() {
   const [confirmNewPin, setConfirmNewPin] = useState('')
   const [changePinSuccess, setChangePinSuccess] = useState(false)
 
-  // Giả lập dữ liệu (thực tế sẽ lấy từ backend + decrypt bằng PIN/private key)
-  const realPrivateKey = "0x4f3edf982fc53e8a6977f57381e0e8d5c8728c2f8e9b3c4d7a9e8c5b2d1f9e8c7a5d3" // ví dụ
-  const currentPin = "1234" // PIN hiện tại (giả lập)
+  const [walletBalance, setWalletBalance] = useState<number>(0)
+
+  async function getBalance() {
+    const balance =  await getWalletBalance()
+    if (balance !== null) {
+      setWalletBalance(balance)
+    }
+  }
+
+  async function getPrivateKey(): Promise<boolean> {
+    const extractedPrivateKey = await revertedPrivateKey(pinInput);
+    if (extractedPrivateKey) {
+      setRealPrivateKey(extractedPrivateKey.data.private_key)
+      return true
+    }
+    return false
+  }
+
+  useEffect(() => {
+    getBalance()
+  }, [])
+  
+  
+
+
 
   const handleCopyPrivateKey = () => {
     navigator.clipboard.writeText(realPrivateKey)
@@ -33,12 +58,32 @@ export default function WalletDetail() {
     setTimeout(() => setCopiedPrivateKey(false), 2000)
   }
 
+
   const handleRevealPrivateKey = () => {
-    if (pinInput === currentPin) {
+    const result = getPrivateKey()
+    result.then(() => {
       setShowPrivateKey(true)
       setPinInput('')
-    } else {
+    }).catch(() => {
       alert('Mã PIN không đúng!')
+    })
+  }
+
+  async function handleChangePinUsingOldPin(oldPin: string, newPin: string) {
+    const result = await updatePinCodeUsingOldPin(oldPin, newPin)
+    if (result && result.success) {
+      setChangePinSuccess(true)
+    } else {
+      alert('Đổi mã PIN thất bại!')
+    }
+  }
+
+  async function handleChangePinUsingPrivateKey(privateKey: string, newPin: string) {
+    const result = await updatePinCodeUsingPrivateKey(privateKey, newPin)
+    if (result && result.success) {
+      setChangePinSuccess(true)
+    } else {
+      alert('Đổi mã PIN thất bại!')
     }
   }
 
@@ -47,17 +92,19 @@ export default function WalletDetail() {
       alert('Mã PIN mới không khớp!')
       return
     }
-    if (newPin.length < 4) {
-      alert('Mã PIN phải có ít nhất 4 chữ số!')
+    if (newPin.length != 6) {
+      alert('Mã PIN phải co 6 chữ số!')
       return
     }
 
     let authenticated = false
 
-    if (authMethod === 'oldPin' && oldPin === currentPin) {
+    if (authMethod === 'oldPin') {
+      handleChangePinUsingOldPin(oldPin, newPin)
       authenticated = true
     }
-    if (authMethod === 'privateKey' && privateKeyInput.trim() === realPrivateKey) {
+    if (authMethod === 'privateKey') {
+      handleChangePinUsingPrivateKey(privateKeyInput.trim(), newPin)
       authenticated = true
     }
 
@@ -124,7 +171,7 @@ export default function WalletDetail() {
                 </div>
                 <div>
                   <p className="text-white/70 mb-2 text-lg">Số dư</p>
-                  <p className="text-3xl font-black text-emerald-400">{formatBalance(500000)} VNDC</p>
+                  <p className="text-3xl font-black text-emerald-400">{formatBalance(walletBalance)} VNDC</p>
                 </div>
               </div>
             </div>
@@ -250,7 +297,7 @@ export default function WalletDetail() {
                         type="password"
                         value={newPin}
                         onChange={(e) => setNewPin(e.target.value)}
-                        placeholder="Nhập mã PIN mới (tối thiểu 4 số)"
+                        placeholder="Nhập mã PIN mới (6 số)"
                         className="w-full py-6 px-6 rounded-3xl bg-white/5 border border-white/20 text-xl placeholder-white/50 focus:outline-none focus:border-purple-500"
                       />
                       <input

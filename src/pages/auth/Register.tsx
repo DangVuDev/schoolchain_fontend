@@ -1,7 +1,7 @@
 // src/pages/Register.tsx – SẠCH NHẤT VIỆT NAM 2025
+import { CheckCircle2, Eye, EyeOff } from 'lucide-react'
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, CheckCircle2 } from 'lucide-react'
 
 // CHỈ KHAI BÁO 1 LẦN – DÙNG LẠI Ở CẢ LOGIN VÀ REGISTER
 const inputClass = "w-full px-5 py-4 rounded-2xl bg-white/10 border border-white/20 placeholder:text-white/40 focus:border-purple-400 focus:outline-none focus:ring-4 focus:ring-purple-400/20 transition"
@@ -16,11 +16,32 @@ export default function Register() {
 
   const strength = password.length >= 12 ? 4 : password.length >= 9 ? 3 : password.length >= 6 ? 2 : password.length > 0 ? 1 : 0
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
     e.preventDefault()
+
     if (!termsAccepted || strength < 3) return
-    navigate('/success')
+
+    const form = e.currentTarget
+    const formData = new FormData(form)
+
+    const data = {
+      student_id: formData.get('student_id') as string,
+      full_name: formData.get('full_name') as string,
+      email: formData.get('email') as string,
+      phone: formData.get('phone') as string,
+      password: formData.get('password') as string
+    }
+
+    if (data.password !== formData.get('confirmPassword') as string) {
+      alert('Mật khẩu không khớp')
+      return
+    }
+
+    console.log('FORM DATA:', data)
+
+    navigate('/passphrase', { state: data })
   }
+
 
   return (
     <div className="min-h-screen flex flex-col justify-center px-5 py-12 bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white">
@@ -42,11 +63,11 @@ export default function Register() {
           </div>
 
           <form onSubmit={handleSubmit} className="space-y-5">
-            <input type="text" placeholder="Mã số sinh viên" className={inputClass} required />
-            <input type="text" placeholder="Họ và tên" className={inputClass} required />
-            
+            <input type="text" placeholder="Mã số sinh viên" name="student_id" className={inputClass} required />
+            <input type="text" placeholder="Họ và tên" name="full_name" className={inputClass} required />
+            <input type="text" placeholder="Số điện thoại" name="phone" className={inputClass} required />
             <div>
-              <input type="email" placeholder="Email sinh viên (@edu.vn)" className={inputClass} required />
+              <input type="email" placeholder="Email sinh viên (@edu.vn)" name="email" className={inputClass} required />
               <p className="text-xs text-emerald-400 mt-1.5 flex items-center gap-1">
                 <CheckCircle2 size={14} /> Bắt buộc đuôi .edu.vn
               </p>
@@ -56,6 +77,7 @@ export default function Register() {
               <input
                 type={showPassword ? 'text' : 'password'}
                 placeholder="Mật khẩu mạnh (tối thiểu 9 ký tự)"
+                name="password"
                 value={password}
                 onChange={(e) => setPassword(e.target.value)}
                 className={inputClass + " pr-12"}
@@ -82,7 +104,7 @@ export default function Register() {
             </div>
 
             <div className="relative">
-              <input type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu" className={inputClass + " pr-12"} required />
+              <input type={showConfirm ? 'text' : 'password'} placeholder="Nhập lại mật khẩu" name="confirmPassword" className={inputClass + " pr-12"} required />
               <button type="button" onClick={() => setShowConfirm(!showConfirm)} className={eyeBtnClass}>
                 {showConfirm ? <EyeOff size={20} /> : <Eye size={20} />}
               </button>

@@ -1,42 +1,106 @@
-// src/pages/SendSearch.tsx – BẢN HOÀN HẢO 100% CHO MỌI ĐIỆN THOẠI (2025 EDITION)
-import { useState } from 'react'
+// src/pages/SendSearch.tsx
+import { useEffect, useState } from 'react'
 import { useNavigate } from 'react-router-dom'
 import { ArrowLeft, Search, QrCode, Star, Wallet } from 'lucide-react'
+import { useDebounce } from '../../hook/useDebounce'
 
 interface Contact {
   id: string
   name: string
   studentId: string
+  address: string
   avatar: string
   isFavorite: boolean
   lastSent: string
 }
 
+// Mock data đầy đủ thông tin ví (thực tế sẽ lấy từ backend)
 const recentContacts: Contact[] = [
-  { id: '1', name: 'Trần Văn Hùng', studentId: '22DH110089', avatar: 'TH', isFavorite: true, lastSent: '2 ngày trước' },
-  { id: '2', name: 'Lê Thị Diệu', studentId: '22DH110045', avatar: 'LD', isFavorite: false, lastSent: '5 ngày trước' },
-  { id: '3', name: 'Phạm Minh Đức', studentId: '22DH110123', avatar: 'PD', isFavorite: false, lastSent: '1 tuần trước' },
-  { id: '4', name: 'Nguyễn Ngọc Mai', studentId: '22DH110001', avatar: 'NM', isFavorite: true, lastSent: 'Hôm qua' },
-  { id: '5', name: 'Hoàng Văn Nam', studentId: '22DH110567', avatar: 'HN', isFavorite: false, lastSent: '3 ngày trước' },
+  { id: '1', name: 'Trần Văn Hùng', studentId: '22DH110089', address: '0x3f1aB7cD9eF7a12d8B8a9c3F2d4e5F6a7B8c9D0e1', avatar: 'TH', isFavorite: true, lastSent: '2 ngày trước' },
+  { id: '2', name: 'Lê Thị Diệu', studentId: '22DH110045', address: '0x8a2b9C1dE3f4A5b6C7d8E9f0A1b2C3d4E5f6A7b8', avatar: 'LD', isFavorite: false, lastSent: '5 ngày trước' },
+  { id: '3', name: 'Phạm Minh Đức', studentId: '22DH110123', address: '0x1a2B3c4D5e6F7a8B9c0D1e2F3a4B5c6D7e8F9a0B', avatar: 'PD', isFavorite: false, lastSent: '1 tuần trước' },
+  { id: '4', name: 'Nguyễn Ngọc Mai', studentId: '22DH110001', address: '0xFf9a8B7c6D5e4F3a2B1c0D9e8F7a6B5c4D3e2F1a', avatar: 'NM', isFavorite: true, lastSent: 'Hôm qua' },
+  { id: '5', name: 'Hoàng Văn Nam', studentId: '22DH110567', address: '0x9AbBcCdDeEfF0123456789abcdef0123456789ab', avatar: 'HN', isFavorite: false, lastSent: '3 ngày trước' },
+  { id: '6', name: 'Vũ Minh Quân', studentId: '22DH110999', address: '0x1234567890abcdef1234567890abcdef12345678', avatar: 'VQ', isFavorite: true, lastSent: 'Hôm nay' },
 ]
 
 export default function SendSearch() {
   const navigate = useNavigate()
   const [search, setSearch] = useState('')
   const [manualAddress, setManualAddress] = useState('')
+  const [, setReceiverInfo] = useState<{ name: string; address: string } | null>(null)
 
+  const debouncedSearch = useDebounce(search.trim(), 500)
+
+  // Lọc danh sách local theo tên hoặc MSSV
   const filtered = recentContacts.filter(c =>
     c.name.toLowerCase().includes(search.toLowerCase()) ||
     c.studentId.includes(search)
   )
 
+  // Mock API resolve – thay thế hoàn toàn cho fetch thật
+  const resolveReceiver = async (query: string) => {
+    await new Promise(r => setTimeout(r, 300)) // giả lập delay mạng
+
+    const q = query.toLowerCase()
+
+    // 1. Tìm chính xác theo studentId
+    const byStudentId = recentContacts.find(c => c.studentId === query)
+    if (byStudentId) {
+      return { name: byStudentId.name, address: byStudentId.address }
+    }
+
+    // 2. Tìm chính xác theo địa chỉ ví
+    const byAddress = recentContacts.find(c => c.address.toLowerCase() === q)
+    if (byAddress) {
+      return { name: byAddress.name, address: byAddress.address }
+    }
+
+    // Không tìm thấy
+    return null
+  }
+
+  useEffect(() => {
+    document.title = 'Gửi VNDC - Tìm kiếm người nhận'
+
+    if (!debouncedSearch) {
+      setReceiverInfo(null)
+      return
+    }
+
+    let cancelled = false
+
+    resolveReceiver(debouncedSearch).then(result => {
+      if (!cancelled) {
+        setReceiverInfo(result)
+      }
+    })
+
+    return () => { cancelled = true }
+  }, [debouncedSearch])
+
   const handleSelect = (contact: Contact) => {
-    navigate('/send/amount', { state: { recipient: contact } })
+    navigate('/send/amount', { 
+      state: { 
+        recipient: {
+          name: contact.name,
+          studentId: contact.studentId,
+          address: contact.address,
+          avatar: contact.avatar
+        }
+      } 
+    })
   }
 
   const handleManualSend = () => {
     if (manualAddress.trim()) {
-      navigate('/send/amount', { state: { recipient: { name: 'Địa chỉ ví', address: manualAddress } } })
+      navigate('/send/amount', { 
+        state: { 
+          recipient: {
+            address: manualAddress.trim() 
+          } 
+        } 
+      })
     }
   }
 
@@ -65,7 +129,6 @@ export default function SendSearch() {
             </h1>
           </div>
 
-          {/* 0 GAS FEE Badge nhỏ gọn, lệch phải */}
           <div className="bg-gradient-to-r from-emerald-500 to-teal-500 px-4 py-2 rounded-full font-black text-xs sm:text-sm shadow-2xl shadow-emerald-500/70 animate-pulse">
             0 GAS FEE
           </div>
@@ -192,7 +255,6 @@ export default function SendSearch() {
         </div>
       </div>
 
-      {/* Safe area bottom */}
       <div className="pb-env(safe-area-inset-bottom)" />
     </div>
   )

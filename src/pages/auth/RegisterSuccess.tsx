@@ -1,18 +1,15 @@
 import { useEffect } from 'react'
 import { useNavigate } from 'react-router-dom'
 import confetti from 'canvas-confetti'
-import { useAuth } from '../../context/AuthContext'
 
 export default function RegisterSuccess() {
   const navigate = useNavigate()
-  const { login } = useAuth()
 
   useEffect(() => {
     confetti({ particleCount: 200, spread: 80, origin: { y: 0.6 } })
-    login()
     const timer = setTimeout(() => navigate('/home'), 4000)
     return () => clearTimeout(timer)
-  }, [login, navigate])
+  }, [navigate])
 
   return (
     <div className="min-h-screen flex items-center justify-center text-center px-6 bg-black">

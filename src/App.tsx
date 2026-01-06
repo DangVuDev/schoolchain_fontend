@@ -4,7 +4,6 @@ import BottomNav from './components/BottomNav'
 import AuthProvider, { useAuth } from './context/AuthContext'
 
 // === CÁC PAGE HIỆN TẠI ===
-import Login from './pages/auth/Login'
 import Register from './pages/auth/Register'
 import RegisterSuccess from './pages/auth/RegisterSuccess'
 import BuyTicketConfirmPage from './pages/event/BuyTicketConfirmPage'
@@ -17,7 +16,6 @@ import TicketDetailPage from './pages/event/TicketDetailPage'
 import Home from './pages/Home'
 import Receive from './pages/receive/Receive'
 import Splash from './pages/Splash'
-import Security from './pages/tranfer/Security'
 import SendAmount from './pages/tranfer/SendAmount'
 import SendConfirm from './pages/tranfer/SendConfirm'
 import SendReceipt from './pages/tranfer/SendReceipt'
@@ -36,6 +34,11 @@ import TransactionHistoryPage from './pages/wallet/TransactionHistoryPage'
 import TransferFailed from './pages/tranfer/TransferFailed'
 import Notifications from './pages/setting/Notifications'
 import PersonalInfo from './pages/setting/PersonalInfo'
+import Security from './pages/setting/Security'
+import Login from './pages/auth/Login'
+import PassphraseSetup from './pages/auth/PassphraseSetup'
+import { EventsProvider } from './context/EventsContext'
+import CreateEventPage from './pages/event/CreateEventPage'
 
 // Danh sách các trang KHÔNG HIỆN BottomNav
 const NO_BOTTOM_NAV_ROUTES = [
@@ -60,6 +63,7 @@ function AppContent() {
         <Route path="/" element={<Splash />} />
         <Route path="/login" element={<Login />} />
         <Route path="/register" element={<Register />} />
+        <Route path="/passphrase" element={<PassphraseSetup />} />
         <Route path="/success" element={<RegisterSuccess />} />
 
         {/* ==================== PROTECTED ROUTES – CŨ ==================== */}
@@ -85,6 +89,7 @@ function AppContent() {
   
         {/* Event Flow */}
         <Route path="/events/:id" element={isLoggedIn ? <EventDetailPage /> : <Navigate to="/login" />} />
+        <Route path="/events/create" element={isLoggedIn ? <CreateEventPage /> : <Navigate to="/login" />} />
         <Route path="/ticket/:tokenId" element={isLoggedIn ? <TicketDetailPage /> : <Navigate to="/login" />} />
         <Route path="/events/buy" element={isLoggedIn ? <BuyTicketConfirmPage /> : <Navigate to="/login" />} />
         <Route path="/payment-success" element={isLoggedIn ? <PaymentSuccessPage /> : <Navigate to="/login" />} />
@@ -112,7 +117,9 @@ export default function App() {
   return (
     <BrowserRouter>
       <AuthProvider>
-        <AppContent />
+        <EventsProvider>
+          <AppContent />
+        </EventsProvider>
       </AuthProvider>
     </BrowserRouter>
   )

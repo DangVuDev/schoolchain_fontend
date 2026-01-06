@@ -1,4 +1,4 @@
-// src/pages/Receive.tsx – BẢN HOÀN HẢO NHẤT VIỆT NAM 2025 (FULL RESPONSIVE)
+// src/pages/Receive.tsx – BẢN HOÀN HẢO NHẤT, ĐẸP NHƯ BẢN GỐC + QUÉT DỄ
 import { Copy, Share2, Download, CheckCircle2, ArrowDownToLine, Sparkles, Wallet } from 'lucide-react'
 import { useState, useEffect, useRef } from 'react'
 import QRCode from 'qrcode'
@@ -7,16 +7,19 @@ import { formatBalance, shortenAddress } from '../../lib/utils'
 
 export default function Receive() {
   const { walletAddress, userName = 'Bạn' } = useAuth()
-  const address = walletAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
+  const fullAddress = walletAddress || '0x71C7656EC7ab88b098defB751B7401B5f6d8976F'
 
   const [amount, setAmount] = useState('')
   const [copied, setCopied] = useState(false)
   const canvasRef = useRef<HTMLCanvasElement>(null)
 
-  const paymentLink = amount
-    ? `vndc://pay?to=${address}&amount=${amount.replace(/,/g, '')}`
-    : address
+  // Tạo chuỗi dữ liệu QR: chỉ address + amount (đơn giản, dễ quét)
+  const rawAmount = amount.replace(/,/g, '')
+  const paymentLink = amount && Number(rawAmount) > 0 
+    ? `${fullAddress}?amount=${rawAmount}`
+    : fullAddress
 
+  // Tạo QR đen trắng chất lượng cao, dễ quét
   useEffect(() => {
     if (!canvasRef.current) return
 
@@ -27,9 +30,12 @@ export default function Receive() {
       paymentLink,
       {
         width: size,
-        margin: 2,
-        color: { dark: '#8B5CF6', light: '#FFFFFF' },
-        errorCorrectionLevel: 'H',
+        margin: 4,                    // Margin lớn giúp camera tách biệt dễ dàng
+        color: { dark: '#000000', light: '#FFFFFF' }, // Đen trắng thuần túy
+        errorCorrectionLevel: 'H',    // Sửa lỗi 30% – quét được dù bẩn/xước
+      },
+      (error) => {
+        if (error) console.error("QR Error:", error)
       }
     )
   }, [paymentLink])
@@ -43,7 +49,7 @@ export default function Receive() {
   const handleShare = async () => {
     const shareData = {
       title: 'Nhận tiền VNDC từ tôi',
-      text: `${userName} đang yêu cầu bạn gửi ${amount ? formatBalance(Number(amount.replace(/,/g, ''))) + ' VNDC' : 'một khoản tiền bất kỳ'} nhé!`,
+      text: `${userName} đang yêu cầu bạn gửi ${amount ? formatBalance(Number(rawAmount)) + ' VNDC' : 'một khoản tiền bất kỳ'} nhé!`,
       url: paymentLink,
     }
 
@@ -60,7 +66,7 @@ export default function Receive() {
     const url = canvas.toDataURL('image/png', 1.0)
     const a = document.createElement('a')
     a.href = url
-    a.download = `QR_NhanTien_${userName}_${amount || 'BatKy'}_${new Date().toISOString().slice(0,10)}.png`
+    a.download = `QR_NhanTien_${userName}_${amount ? rawAmount : 'BatKy'}_${new Date().toISOString().slice(0,10)}.png`
     a.click()
   }
 
@@ -72,7 +78,7 @@ export default function Receive() {
   ]
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white pb-24 md:pb-32">
+    <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white pb-24 md:pb-32 relative overflow-hidden">
       {/* Dynamic Background */}
       <div className="fixed inset-0 -z-10 pointer-events-none overflow-hidden">
         <div className="absolute inset-0 bg-gradient-to-br from-purple-900/30 via-transparent to-orange-900/30" />
@@ -106,7 +112,7 @@ export default function Receive() {
           <div className="space-y-8">
             {/* QR Card */}
             <div className="relative group">
-              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 to-orange-600/30 blur-3xl rounded-3xl group-hover:blur-xl transition-all" />
+              <div className="absolute inset-0 bg-gradient-to-br from-purple-600/30 to-orange-600/30 blur-3xl group-hover:blur-xl transition-all" />
               <div className="relative bg-white/5 backdrop-blur-3xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-2xl">
                 <div className="flex justify-center">
                   <canvas ref={canvasRef} className="rounded-3xl shadow-2xl max-w-full h-auto" />
@@ -133,20 +139,20 @@ export default function Receive() {
                   placeholder="0"
                   className="w-full px-8 py-10 sm:px-12 sm:py-14 text-center text-5xl sm:text-7xl font-black bg-white/10 rounded-3xl border-2 border-white/20 focus:border-purple-500 focus:ring-4 focus:ring-purple-500/30 transition placeholder:text-white/30 outline-none"
                 />
-                {amount ? (
+                {amount && (
                   <button
                     onClick={() => setAmount('')}
                     className="absolute right-4 sm:right-8 top-1/2 -translate-y-1/2 text-4xl sm:text-6xl text-white/40 hover:text-white transition"
                   >
                     ×
                   </button>
-                ) : null}
+                )}
               </div>
 
               {amount && (
                 <div className="text-center mt-8">
                   <p className="text-4xl sm:text-6xl font-black text-emerald-400 animate-pulse">
-                    {formatBalance(Number(amount.replace(/,/g, '')))} VNDC
+                    {formatBalance(Number(rawAmount))} VNDC
                   </p>
                   <p className="text-white/60 text-lg sm:text-xl mt-3">Sẽ tự động điền khi quét</p>
                 </div>
@@ -156,7 +162,7 @@ export default function Receive() {
 
           {/* Right Column */}
           <div className="space-y-8">
-            {/* Quick Amounts - Responsive Grid */}
+            {/* Quick Amounts */}
             {!amount && (
               <div className="bg-white/5 backdrop-blur-3xl rounded-3xl border border-white/10 p-6 sm:p-10 shadow-2xl">
                 <h3 className="text-2xl sm:text-3xl font-black text-center mb-6">Chọn nhanh</h3>
@@ -181,7 +187,7 @@ export default function Receive() {
                 <div>
                   <p className="text-lg sm:text-2xl text-white/60">Địa chỉ ví</p>
                   <code className="text-xl sm:text-3xl font-mono text-white/90 break-all">
-                    {shortenAddress(address)}
+                    {shortenAddress(fullAddress)}
                   </code>
                 </div>
               </div>
@@ -227,14 +233,13 @@ export default function Receive() {
         </div>
       </div>
 
-      {/* Mobile Bottom Navigation - Fixed & Safe Area */}
+      {/* Mobile Bottom Navigation */}
       <div className="fixed bottom-0 left-0 right-0 bg-black/80 backdrop-blur-3xl border-t border-white/10 px-4 py-4 lg:hidden z-50">
         <div className="flex justify-around items-center text-xs sm:text-sm">
           {['Home', 'Send', 'Receive', 'Events', 'Profile'].map((tab) => (
             <div
               key={tab}
-              className={`text-center ${tab === 'Receive' ? 'text-purple-400 scale-110 font-bold' : 'text-white/50'
-                } transition-all`}
+              className={`text-center ${tab === 'Receive' ? 'text-purple-400 scale-110 font-bold' : 'text-white/50'} transition-all`}
             >
               <div className="w-10 h-10 sm:w-12 sm:h-12 mx-auto mb-1 bg-white/10 rounded-full flex items-center justify-center">
                 <div className="w-6 h-6 bg-white/30 rounded-full" />
@@ -245,8 +250,8 @@ export default function Receive() {
         </div>
       </div>
 
-      {/* iOS Safe Area Bottom */}
-      <div className="pb-env(safe-area-inset-bottom)" />
+      {/* Safe Area Bottom */}
+      <div className="pb-[env(safe-area-inset-bottom)]" />
     </div>
   )
 }
