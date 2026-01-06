@@ -8,13 +8,11 @@ export default function SendScan() {
   const navigate = useNavigate()
   const scannerRef = useRef<Html5Qrcode | null>(null)
   const fileInputRef = useRef<HTMLInputElement>(null)
-  const isPausedRef = useRef(false)
   
   const [flashOn, setFlashOn] = useState(false)
   const [logs, setLogs] = useState<string[]>([])
   const [showDebug, setShowDebug] = useState(false)
   const [, setError] = useState<string | null>(null)
-  const [scanMode, setScanMode] = useState<'camera' | 'file'>('camera')
 
   const addLog = (msg: string) => {
     setLogs(prev => [msg, ...prev].slice(0, 8))
