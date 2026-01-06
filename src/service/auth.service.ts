@@ -34,28 +34,29 @@ export interface RegisterResponse {
 // services/auth.service.ts (hoặc đặt trực tiếp trong component cũng được)
 import axios from 'axios';
 
-const API_URL = 'http://localhost:3000/api/v1/auth/login';
+//const API_URL = 'http://localhost:3000/api/v1/auth/login';
 
-export const post_login = async (credentials: LoginCredentials): Promise<LoginResponse> => {
+export const post_login = async (
+  credentials: LoginCredentials
+): Promise<LoginResponse> => {
   try {
-
     console.log('Attempting login with credentials:', credentials);
 
-    const response = await axios.post<LoginResponse>(
-      API_URL,
-      {
-        student_id: credentials.student_id,
-        password: credentials.password,
-      },
-      {
-        headers: {
-          'Content-Type': 'application/json', // ← Đảm bảo có header này
-        },
-      } // ← ĐÓNG ĐÚNG DẤU NGOẶC Ở ĐÂY, KHÔNG ĐƯỢC THIẾU!
-    );
+    // MOCK RESPONSE
+    const response: LoginResponse = {
+      success: true,
+      data: {
+        access_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.access.payload.signature",
+        refresh_token: "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.refresh.payload.signature",
+        wallet_address: "0xA3f9cB7E4d2B6A1C9F0E8D7B5C4A2E1F0D9C8B7A",
+        encrypted_private_key: "U2FsdGVkX19xk2s8W7nKZPpZ3xJ5E0nJr7M9sR0vEwQ=",
+        iv: "b3c2d1a0e9f8c7b6a5d4c3b2a1f0e9d8",
+        salt: "9f8e7d6c5b4a39281726354433221100"
+      }
+    };
 
-    if (response.data.success) {
-      const { data } = response.data;
+    if (response.success) {
+      const data = response.data;
       localStorage.setItem('access_token', data.access_token);
       localStorage.setItem('refresh_token', data.refresh_token);
       localStorage.setItem('wallet_address', data.wallet_address);
@@ -65,12 +66,13 @@ export const post_login = async (credentials: LoginCredentials): Promise<LoginRe
       localStorage.setItem('user_session', JSON.stringify(data));
     }
 
-    return response.data;
+    return response;
   } catch (error: any) {
-    console.error('Login failed:', error.response?.data || error.message);
+    console.error('Login failed:', error.message);
     throw error;
   }
 };
+
 
 export const post_register = async (data: any): Promise<RegisterResponse> => {
   try {

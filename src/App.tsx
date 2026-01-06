@@ -51,6 +51,7 @@ const NO_BOTTOM_NAV_ROUTES = [
 
 function AppContent() {
   const { isLoggedIn } = useAuth()
+  
   const location = useLocation()
 
   // Hiện BottomNav khi đã login + không phải trang công khai
