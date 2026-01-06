@@ -12,7 +12,7 @@ export default function Splash() {
   useEffect(() => {
     // Chuyển hướng sau 3 giây (3000ms)
     const timer = setTimeout(() => {
-      navigate(isLoggedIn ? '/home' : '/register')
+      navigate(isLoggedIn ? '/home' : '/login')
     }, 3000)
     return () => clearTimeout(timer)
   }, [isLoggedIn, navigate])
