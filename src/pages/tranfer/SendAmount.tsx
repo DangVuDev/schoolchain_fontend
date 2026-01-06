@@ -56,16 +56,21 @@ export default function SendAmount() {
       }
   }
 
-  useEffect(() => {
-    document.title = `Gửi VNDC đến ${recipient.name}`
+useEffect(() => {
+  // Nếu không có address nào → có thể do lỗi navigate → quay về scan
+  if (!initialData.address) {
+    navigate('/send/scan', { replace: true });
+    return;
+  }
 
-    // Chỉ gọi nếu thiếu thông tin đầy đủ (không có name hoặc studentId)
-    if (!initialData.name || !initialData.studentId) {
+  document.title = `Gửi VNDC đến ${recipient.name}`;
+
+  if (!initialData.name || !initialData.studentId) {
+    if (initialData.address) {
       fetchRecipientByAddressOrId(initialData.address);
-    } else {
     }
-  }, [])
-
+  }
+}, [initialData.address]); // Thêm dependency để chắc chắn
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-950 via-purple-950 to-slate-950 text-white pb-28">

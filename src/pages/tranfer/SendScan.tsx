@@ -14,6 +14,7 @@ export default function SendScan() {
   const [logs, setLogs] = useState<string[]>([])
   const [showDebug, setShowDebug] = useState(false)
   const [, setError] = useState<string | null>(null)
+  const [scanMode, setScanMode] = useState<'camera' | 'file'>('camera')
 
   const addLog = (msg: string) => {
     setLogs(prev => [msg, ...prev].slice(0, 8))
@@ -52,20 +53,21 @@ export default function SendScan() {
       }
     }
 
-    initScanner()
+    initScanner();
 
-    return () => {
-      isMounted = false
-      if (scannerRef.current) {
-        scannerRef.current.stop().catch(() => {})
-      }
+  return () => {
+    if (scannerRef.current?.isScanning) {
+      scannerRef.current.stop().then(() => {
+        scannerRef.current?.clear()
+      }).catch(() => {})
     }
+  }
   }, [])
 
-  const handleParsedText = async (text: string) => {
+const handleParsedText = async (text: string, isFromFile = false) => {
   const cleanText = text.trim();
   addLog(`🔍 Phát hiện: ${cleanText.slice(0, 30)}...`);
-  
+
   let recipientAddress = cleanText;
   let preFilledAmount = "";
 
@@ -77,63 +79,59 @@ export default function SendScan() {
   }
 
   if (/^0x[a-fA-F0-9]{40}$/i.test(recipientAddress)) {
-    addLog("✅ Khớp ví! Đang chuyển hướng...");
+    addLog("✅ Khớp ví hợp lệ!");
 
-    try {
-      // CHỈ dừng scanner nếu đang chạy camera (isScanning là true)
-      // Khi quét từ File, isScanning sẽ là false -> Bỏ qua lệnh này sẽ hết lỗi removeChild
-      if (scannerRef.current && scannerRef.current.isScanning) {
+    // CHỈ stop camera nếu KHÔNG PHẢI quét từ file và camera đang chạy
+    if (!isFromFile && scannerRef.current?.isScanning) {
+      try {
         await scannerRef.current.stop();
-        console.log("Scanner stopped successfully");
+        await scannerRef.current.clear();
+        addLog("🛑 Camera đã dừng");
+      } catch (err) {
+        console.warn("Lỗi khi dừng camera:", err);
       }
-    } catch (err) {
-      console.warn("Lỗi khi dừng scanner (có thể bỏ qua):", err);
     }
 
-    // Sử dụng setTimeout để đảm bảo UI đã ổn định trước khi chuyển trang
-    setTimeout(() => {
-      navigate('/send/amount', { 
-        state: { 
-          recipient: { address: recipientAddress.trim() },
-          amount: preFilledAmount.trim() 
-        } 
-      });
-    }, 100);
+    await new Promise(resolve => setTimeout(resolve, 600));
+    const isMobile = /iPhone|iPad|iPod|Android/i.test(navigator.userAgent);
 
+    navigate("/send/amount", {
+      replace: isMobile,
+      state: {
+        recipient: { address: recipientAddress.trim() },
+        amount: preFilledAmount.trim(),
+      },
+    });
   } else {
     addLog("❌ QR không chứa địa chỉ ví hợp lệ");
   }
 };
-
-
-
   // Tính năng chọn ảnh từ máy
-  const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+const handleFileChange = async (e: ChangeEvent<HTMLInputElement>) => {
+  const file = e.target.files?.[0];
+  if (!file) return;
 
-    addLog(`📂 Đang đọc file: ${file.name}`)
-    
-    // Tạm dừng scanner nếu đang chạy để giải phóng tài nguyên
-    if (scannerRef.current?.isScanning) {
-        await scannerRef.current.pause()
-        isPausedRef.current = true
-    }
+  addLog(`📂 Đang đọc file: ${file.name}`);
+  
+  // Quan trọng: Sử dụng một ID ảo hoặc ẩn nếu không muốn ảnh file đè lên view camera
+  const fileScanner = new Html5Qrcode("qr-reader"); 
 
-    try {
-      const scanner = new Html5Qrcode("qr-reader") // Dùng instance hiện tại
-      const result = await scanner.scanFile(file, true)
-      handleParsedText(result)
-    } catch (err) {
-      addLog("❌ Không tìm thấy mã QR trong ảnh này")
-      alert("Không tìm thấy mã QR trong ảnh. Hãy thử ảnh rõ nét hơn!")
-    } finally {
-      if (isPausedRef.current && scannerRef.current) {
-          scannerRef.current.resume()
-          isPausedRef.current = false
-      }
-    }
+  try {
+    // Scan file (để false nếu không muốn nó render ảnh đè lên DOM đang chạy camera)
+    const result = await fileScanner.scanFile(file, false); 
+    addLog("✅ Scan file thành công");
+
+    // Xử lý kết quả với tham số isFromFile = true
+    await handleParsedText(result, true);
+
+  } catch (err) {
+    addLog("❌ Không tìm thấy mã QR trong ảnh");
+    alert("Không tìm thấy mã QR trong ảnh.");
+  } finally {
+    // Luôn dọn dẹp fileScanner
+    try { await fileScanner.clear(); } catch (_) {}
   }
+};
 
   const toggleTorch = async () => {
     try {

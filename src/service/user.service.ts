@@ -97,15 +97,15 @@ const createAnonymousUser = (address: string): UserInfoResponse => {
 export const getUserFromAddress = async (address: string): Promise<UserInfoResponse> => {
   const access_token = localStorage.getItem('access_token')
 
-  // Nếu không có token, trả về anonymous ngay
   if (!access_token) {
     console.warn('Không tìm thấy access_token → trả về anonymous user')
     return createAnonymousUser(address)
   }
 
   try {
+    // ⚠️ THAY ĐỔI QUAN TRỌNG: Dùng relative path thay vì localhost
     const response = await axios.get<UserInfoResponse>(
-      `http://localhost:3000/api/v1/user/profile/${address}`,
+      `/api/v1/user/profile/${address}`,  // ← Bỏ http://localhost:3000
       {
         headers: {
           Authorization: `Bearer ${access_token}`,
@@ -114,24 +114,23 @@ export const getUserFromAddress = async (address: string): Promise<UserInfoRespo
       }
     )
 
-    // Nếu API trả về success: true → trả về dữ liệu thật
     if (response.data.success) {
       return response.data
     } else {
-      // API trả về success: false → dùng anonymous
-      console.warn('API trả về success: false → trả về anonymous user', response.data)
+      console.warn('API success: false → dùng anonymous', response.data)
       return createAnonymousUser(address)
     }
   } catch (error: any) {
-    // Lỗi mạng, 401, 500, v.v. → dùng anonymous
-    console.error(
-      'Error fetching user info by address:',
-      error.response?.data || error.message
-    )
+    // Cải thiện log để dễ debug
+    if (error.message === 'Network Error') {
+      console.error('🌐 Network Error: Không thể kết nối đến backend. Kiểm tra URL và backend có đang chạy không.')
+      console.error('Current origin:', window.location.origin)
+    } else {
+      console.error('Error fetching user info:', error.response?.data || error.message)
+    }
     return createAnonymousUser(address)
   }
 }
-
 export const updatePinCodeUsingOldPin = async (oldPin: string, newPin: string): Promise<any> => {
   const access_token = localStorage.getItem('access_token')
   if (!access_token) {
