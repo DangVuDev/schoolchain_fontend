@@ -78,28 +78,57 @@ export const getUserFromStudentId = async (studentId: string): Promise<UserInfoR
   }
 }
 
-export const getUserFromAddress = async (address: string): Promise<UserInfoResponse | null> => {
-  const access_token = localStorage.getItem('access_token')
-  if (!access_token) {
-    console.warn('Không tìm thấy access_token')
-    return null
+// Hàm tạo anonymous user mặc định
+const createAnonymousUser = (address: string): UserInfoResponse => {
+  return {
+    success: true,
+    data: {
+      _id: 'anonymous-' + address.toLowerCase().slice(0, 12), // tạo _id giả dựa trên address
+      student_id: 'anonymous',
+      full_name: 'Anonymous User',
+      email: 'anonymous@example.com',
+      phone: "",
+      role: 'student', // có thể thay đổi thành role mặc định phù hợp với app của bạn
+      created_at: new Date().toISOString(),
+    },
   }
+}
+
+export const getUserFromAddress = async (address: string): Promise<UserInfoResponse> => {
+  const access_token = localStorage.getItem('access_token')
+
+  // Nếu không có token, trả về anonymous ngay
+  if (!access_token) {
+    console.warn('Không tìm thấy access_token → trả về anonymous user')
+    return createAnonymousUser(address)
+  }
+
   try {
-    const response = await axios.get<UserInfoResponse>(`http://localhost:3000/api/v1/user/profile/${address}`, {
-      headers: {
-        Authorization: `Bearer ${access_token}`,
-        'Content-Type': 'application/json',
-      },
-    })
+    const response = await axios.get<UserInfoResponse>(
+      `http://localhost:3000/api/v1/user/profile/${address}`,
+      {
+        headers: {
+          Authorization: `Bearer ${access_token}`,
+          'Content-Type': 'application/json',
+        },
+      }
+    )
+
+    // Nếu API trả về success: true → trả về dữ liệu thật
     if (response.data.success) {
-      return response.data // ← Trả về thông tin user
+      return response.data
     } else {
-      console.error('Lấy thông tin user thất bại:', response.data)
-      return null
+      // API trả về success: false → dùng anonymous
+      console.warn('API trả về success: false → trả về anonymous user', response.data)
+      return createAnonymousUser(address)
     }
   } catch (error: any) {
-    console.error('Error fetching user info by address:', error.response?.data || error.message)
-    return null
+    // Lỗi mạng, 401, 500, v.v. → dùng anonymous
+    console.error(
+      'Error fetching user info by address:',
+      error.response?.data || error.message
+    )
+    return createAnonymousUser(address)
   }
 }
 

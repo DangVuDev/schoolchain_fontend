@@ -181,20 +181,19 @@ export default function SendScan() {
         
         {/* Scan UI Frame */}
         <div className="absolute inset-0 z-20 pointer-events-none flex flex-col items-center justify-center">
-            <div className="w-[75vw] h-[75vw] max-w-[350px] max-h-[350px] relative">
-                <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-purple-500 rounded-tl-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
+            <div className="top-10 w-[75vw] h-[75vw] max-w-[350px] max-h-[350px] relative">
+                {/* <div className="absolute top-0 left-0 w-12 h-12 border-t-4 border-l-4 border-purple-500 rounded-tl-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
                 <div className="absolute top-0 right-0 w-12 h-12 border-t-4 border-r-4 border-purple-500 rounded-tr-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
                 <div className="absolute bottom-0 left-0 w-12 h-12 border-b-4 border-l-4 border-purple-500 rounded-bl-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
                 <div className="absolute bottom-0 right-0 w-12 h-12 border-b-4 border-r-4 border-purple-500 rounded-br-3xl shadow-[0_0_15px_rgba(168,85,247,0.5)]" />
-                
+                 */}
                 <div className="absolute inset-x-4 h-0.5 bg-gradient-to-r from-transparent via-purple-400 to-transparent shadow-[0_0_20px_rgba(168,85,247,1)] animate-scan" />
             </div>
             <p className="mt-8 text-white/60 font-medium tracking-widest text-sm uppercase">Đang tìm mã QR...</p>
         </div>
-      </div>
 
-      {/* Footer Actions */}
-      <div className="absolute bottom-0 inset-x-0 p-8 z-50 bg-gradient-to-t from-black to-transparent space-y-4">
+        {/* Footer Actions */}
+      <div className="absolute bottom-20 inset-x-0 p-8 z-50 bg-gradient-to-t from-black to-transparent space-y-4">
         <div className="grid grid-cols-2 gap-4">
           {/* Nút chọn ảnh */}
           <button 
@@ -224,6 +223,9 @@ export default function SendScan() {
 
         <div className="h-1 w-20 bg-white/20 mx-auto rounded-full" />
       </div>
+      </div>
+
+      
 
       <style>{`
         #qr-reader video { object-fit: cover !important; width: 100% !important; height: 100% !important; }
